@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
+        android:appCategory="social"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -12,14 +15,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Ochat"
         android:usesCleartextTraffic="true"
-        android:appCategory="social"
         tools:targetApi="31">
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:configChanges="uiMode"
-            android:windowSoftInputMode="stateVisible|adjustPan"
+            android:exported="true"
             android:screenOrientation="sensorPortrait"
-            android:exported="true">
+            android:windowSoftInputMode="stateVisible|adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

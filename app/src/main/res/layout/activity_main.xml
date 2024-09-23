@@ -10,7 +10,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:background="@color/plain_layouts"
+        android:background="@drawable/top_bar_layout"
         android:orientation="horizontal"
         android:id="@+id/layout_top_bar"
         app:layout_constraintTop_toTopOf="parent"
@@ -23,13 +23,21 @@
             android:src="@drawable/baseline_settings_24"
             app:tint="@color/white"
             android:padding="5dp"
-            android:layout_marginStart="10dp"/>
+            android:layout_marginStart="10dp"
+            android:id="@+id/btn_settings"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chat"
+            android:textSize="13pt"
+            android:layout_marginStart="20dp"/>
     </LinearLayout>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:id="@+id/scr_message_screen"
+        android:id="@+id/scr_layout_message_screen"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/layout_top_bar"
         app:layout_constraintBottom_toTopOf="@id/layout_messages_bar">

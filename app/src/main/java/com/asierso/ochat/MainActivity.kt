@@ -1,55 +1,47 @@
 package com.asierso.ochat
 
 import android.content.Context
-import android.os.AsyncTask
+import android.content.Intent
 import android.os.Bundle
-import android.util.DisplayMetrics
-import android.util.LayoutDirection
-import android.util.Log
 import android.view.Gravity
-import android.widget.Button
-import android.widget.EditText
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.ActionBar.LayoutParams
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.cardview.widget.CardView
-import androidx.core.view.marginTop
-import androidx.core.view.setPadding
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import com.asierso.ochat.api.*
 import com.asierso.ochat.api.builder.LlamaDialogsBuilder
-import com.asierso.ochat.api.builder.LlamaPromptsBuilder
 import com.asierso.ochat.api.builder.LlamaRequestBaseBuilder
+import com.asierso.ochat.api.handlers.LlamaConnectionException
 import com.asierso.ochat.api.models.LlamaMessage
-import com.asierso.ochat.api.models.LlamaRequest
 import com.asierso.ochat.api.models.LlamaResponse
+import com.asierso.ochat.models.ClientSettings
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.w3c.dom.Text
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 class MainActivity : AppCompatActivity() {
-    enum class Side {User, IA}
-    private lateinit var conversation : ArrayList<LlamaMessage>
+    enum class Side { User, IA }
 
-    private var url : String = ""
-    private var model : String = ""
+    private lateinit var conversation: ArrayList<LlamaMessage>
+
+    private var settings: ClientSettings? = null
+    lateinit var context: Context
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+        context = this
 
         //Rescale UI
         rescale()
@@ -65,28 +57,68 @@ class MainActivity : AppCompatActivity() {
                 changeSendAble(false)
 
 
-                conversation.add(LlamaMessage(LlamaMessage.USER_ROLE,msg.text.toString()))
-                renderMessageView(Side.User).append(msg.text.toString())
+                //Send message and update view
+                conversation.add(LlamaMessage(LlamaMessage.USER_ROLE, msg.text.toString()))
+                if (!msg.text.toString().isBlank())
+                    renderMessageView(Side.User).append(msg.text.toString())
+
+                //Send message and clear text
                 sendPrompt(msg.text.toString())
                 msg.setText("")
             } catch (e: Exception) {
-                Toast.makeText(this, "Error at connecting " + e.toString(), Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Error at connecting " + e.toString(), Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 
-        //URL Change
-        /*
-        findViewById<Button>(R.id.btn_url_config).setOnClickListener{
-            url = findViewById<EditText>(R.id.tf_url_config).text.toString().trim()
-            model = findViewById<EditText>(R.id.tf_model_config).text.toString().trim()
-            conversation = arrayListOf()
-            findViewById<LinearLayout>(R.id.message_layout).removeAllViews()
-            Toast.makeText(this, "Success", Toast.LENGTH_LONG).show()
-        }*/
+        findViewById<ImageView>(R.id.btn_settings).setOnClickListener {
+            val settings = Intent(context, SettingsActivity::class.java)
+            startActivity(settings)
+        }
+
+        settings = FilesManager.loadSettings(this)
+        loadConversation()
+
     }
 
-    private fun changeSendAble(status : Boolean){
-        findViewById<ImageView>(R.id.btn_send).isEnabled = status
+    private fun loadConversation() {
+        if (settings != null && !settings!!.model.isBlank())
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    val loadedConversation = FilesManager.loadConversation(context, settings!!.model)
+                    if (loadedConversation != null) {
+                        conversation.addAll(loadedConversation)
+                        for (balloonMessage in conversation)
+                            renderMessageView(if (balloonMessage.role.equals("user")) Side.User else Side.IA)
+                                .setText(balloonMessage.content.toString())
+                    }
+                }
+            }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        settings = FilesManager.loadSettings(this)
+    }
+
+    private fun changeSendAble(status: Boolean) {
+        val sendBtn = findViewById<ImageView>(R.id.btn_send);
+        sendBtn.isEnabled = status
+        if (!status)
+            sendBtn.setImageDrawable(
+                AppCompatResources.getDrawable(
+                    this,
+                    R.drawable.spinner_rotate
+                )
+            )
+        else
+            sendBtn.setImageDrawable(
+                AppCompatResources.getDrawable(
+                    this,
+                    R.drawable.baseline_send_24
+                )
+            )
     }
 
     private fun rescale() {
@@ -102,31 +134,43 @@ class MainActivity : AppCompatActivity() {
         //findViewById<ScrollView>(R.id.scr_message_screen).layoutParams.height = resources.displayMetrics.heightPixels - msgLayout.layoutParams.height - topLayout.layoutParams.height
     }
 
-    private fun renderMessageView(side : Side) : TextView{
-        val ctx : Context = this
-
+    private fun renderMessageView(side: Side): TextView {
         //Create card
-        val card = MaterialCardView(this).apply{
-            radius = 27f
-            elevation = 10f
+        val card = MaterialCardView(this).apply {
+            elevation = 20f
 
             //Set card resolution
-            minimumHeight = Global.getPixels(ctx,70)
-            setContentPadding(Global.getPixels(ctx,10),Global.getPixels(ctx,10),Global.getPixels(ctx,10),Global.getPixels(ctx,10))
+            minimumHeight = Global.getPixels(context, 70)
+            setContentPadding(
+                Global.getPixels(context, 10),
+                Global.getPixels(context, 10),
+                Global.getPixels(context, 10),
+                Global.getPixels(context, 10)
+            )
 
             //Set card design
-            if(side == Side.User)
-                setBackgroundDrawable(AppCompatResources.getDrawable(ctx,R.drawable.user_message_balloon))
+            if (side == Side.User)
+                setBackgroundDrawable(
+                    AppCompatResources.getDrawable(
+                        context,
+                        R.drawable.user_message_balloon
+                    )
+                )
             else
-                setBackgroundDrawable(AppCompatResources.getDrawable(ctx,R.drawable.ia_message_balloon))
+                setBackgroundDrawable(
+                    AppCompatResources.getDrawable(
+                        context,
+                        R.drawable.ia_message_balloon
+                    )
+                )
 
-            //setCardBackgroundColor(getColor(if(side == Side.User) R.color.user_wrote else R.color.ia_wrote))
+            //Adjust layout
             layoutParams = LinearLayout.LayoutParams(
-                Global.getPixels(ctx,250),
+                Global.getPixels(context, 250),
                 LayoutParams.WRAP_CONTENT
-            ).apply{
-                setMargins(0, Global.getPixels(ctx,10),0,Global.getPixels(ctx,10 ))
-                gravity = if(side == Side.User) Gravity.END else Gravity.START
+            ).apply {
+                setMargins(0, Global.getPixels(context, 10), 0, Global.getPixels(context, 10))
+                gravity = if (side == Side.User) Gravity.END else Gravity.START
             }
         }
 
@@ -134,7 +178,7 @@ class MainActivity : AppCompatActivity() {
         val txt = TextView(this).apply {
             setText("")
             textSize = 16f
-            setTextColor(getColor(if(side == Side.User) R.color.user_wrote_fore else R.color.ia_wrote_fore))
+            setTextColor(getColor(if (side == Side.User) R.color.user_wrote_fore else R.color.ia_wrote_fore))
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT
@@ -146,45 +190,29 @@ class MainActivity : AppCompatActivity() {
         return txt
     }
 
-    private fun sendPrompt(msg : String) {
-        val updateView : TextView = renderMessageView(Side.IA)
+    private fun sendPrompt(msg: String) {
+        val updateView: TextView = renderMessageView(Side.IA)
+        if (settings == null) {
+            Toast.makeText(this, "Error, specify valid settings", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         lifecycleScope.launch {
             val res = withContext(Dispatchers.IO) {
-                val llama = LlamaConnection(url)
+                val llama = LlamaConnection(Global.bakeUrl(settings) ?: "")
 
                 val llbb = LlamaRequestBaseBuilder()
-                    .useModel(model)
+                    .useModel(settings?.model.toString())
                     .withStream(true)
                     .build()
 
-                /*
-                llama.fetchRealtime(
-                    LlamaPromptsBuilder(llbb).appendPrompt(msg).build()
-                ) { e ->
-                    lifecycleScope.launch {
-                        withContext(Dispatchers.Main) {
-                            updateView.append(e.response.toString())
-                        }
-                    }
-                }*/
-
                 val dialogbuilder = LlamaDialogsBuilder(llbb)
-                for(handle in conversation)
-                    dialogbuilder.createDialog(handle.role,handle.content)
+                for (handle in conversation)
+                    dialogbuilder.createDialog(handle.role, handle.content)
 
-                /*
-                llama.fetchRealtime(
-                    LlamaPromptsBuilder(llbb).appendPrompt(msg).build()
-                ) { e ->
-                    lifecycleScope.launch {
-                        withContext(Dispatchers.Main) {
-                            updateView.append(e.response.toString())
-                        }
-                    }
-                }*/
-
-                    llama.fetchRealtime(
+                var llres: LlamaResponse? = null
+                try {
+                    llres = llama.fetchRealtime(
                         dialogbuilder.build()
                     ) { e ->
                         lifecycleScope.launch {
@@ -193,8 +221,27 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
                     }
+                } catch (e: LlamaConnectionException) {
+                    llres = null
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Error ${e.message}", Toast.LENGTH_SHORT).show()
+
+                        val hotCardView = (updateView.parent as ViewGroup)
+                        (hotCardView.parent as ViewGroup).removeView(hotCardView)
+                        hotCardView.removeView(updateView)
+
+                    }
+                }
+                return@withContext llres
             }
-            conversation.add(LlamaMessage(LlamaMessage.ASSISTANT_ROLE,res.message.content))
+            if (res != null) {
+                conversation.add(LlamaMessage(LlamaMessage.ASSISTANT_ROLE, res.message.content))
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        FilesManager.saveConversation(context, settings!!.model, conversation.toTypedArray())
+                    }
+                }
+            }
             changeSendAble(true)
         }
     }
