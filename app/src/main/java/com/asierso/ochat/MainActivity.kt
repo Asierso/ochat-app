@@ -7,6 +7,7 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -82,15 +83,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadConversation() {
-        if (settings != null && !settings!!.model.isBlank())
+        if (settings != null && settings!!.model != null && !settings!!.model.isBlank())
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
-                    val loadedConversation = FilesManager.loadConversation(context, settings!!.model)
+                    val loadedConversation = FilesManager.loadConversation(
+                        context,
+                        "${settings!!.ip}_${settings!!.model}"
+                    )
                     if (loadedConversation != null) {
                         conversation.addAll(loadedConversation)
                         for (balloonMessage in conversation)
-                            renderMessageView(if (balloonMessage.role.equals("user")) Side.User else Side.IA)
-                                .setText(balloonMessage.content.toString())
+                            withContext(Dispatchers.Main) {
+                                renderMessageView(if (balloonMessage.role.equals("user")) Side.User else Side.IA)
+                                    .setText(balloonMessage.content.toString())
+                            }
                     }
                 }
             }
@@ -99,7 +105,19 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        //Apply settings
+        val prevTmp = settings
         settings = FilesManager.loadSettings(this)
+
+        //Detects changes in settings and clear chats if is it or clear chat if is removed
+        if (settings.hashCode() != prevTmp.hashCode() || !FilesManager.chatExists(this,"${settings!!.ip}_${settings!!.model}")) {
+            findViewById<LinearLayout>(R.id.message_layout).removeAllViews()
+            conversation.clear()
+
+            //Try to charge if there is another saved conversation
+            if (settings?.model != null && settings?.ip != null)
+                loadConversation()
+        }
     }
 
     private fun changeSendAble(status: Boolean) {
@@ -123,15 +141,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun rescale() {
         val text = findViewById<TextInputLayout>(R.id.tf_message_layout)
-        val msgLayout = findViewById<LinearLayout>(R.id.layout_messages_bar)
-        val topLayout = findViewById<LinearLayout>(R.id.layout_top_bar)
+
         //Adjust text layout
-        var layout = text.layoutParams
+        val layout = text.layoutParams
         layout.width = resources.displayMetrics.widthPixels - 230
         text.layoutParams = layout
-
-        //Adjust scrollview
-        //findViewById<ScrollView>(R.id.scr_message_screen).layoutParams.height = resources.displayMetrics.heightPixels - msgLayout.layoutParams.height - topLayout.layoutParams.height
     }
 
     private fun renderMessageView(side: Side): TextView {
@@ -218,6 +232,12 @@ class MainActivity : AppCompatActivity() {
                         lifecycleScope.launch {
                             withContext(Dispatchers.Main) {
                                 updateView.append(e.message.content.toString())
+                                val scroll =
+                                    findViewById<ScrollView>(R.id.scr_layout_message_screen)
+                                scroll.scrollTo(
+                                    0,
+                                    scroll.bottom + (resources.displayMetrics.densityDpi * 10)
+                                )
                             }
                         }
                     }
@@ -238,7 +258,11 @@ class MainActivity : AppCompatActivity() {
                 conversation.add(LlamaMessage(LlamaMessage.ASSISTANT_ROLE, res.message.content))
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
-                        FilesManager.saveConversation(context, settings!!.model, conversation.toTypedArray())
+                        FilesManager.saveConversation(
+                            context,
+                            "${settings!!.ip}_${settings!!.model}",
+                            conversation.toTypedArray()
+                        )
                     }
                 }
             }

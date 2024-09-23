@@ -1,5 +1,7 @@
 package com.asierso.ochat.models;
 
+import java.util.Objects;
+
 public class ClientSettings {
     private String ip;
     private int port;
@@ -36,5 +38,18 @@ public class ClientSettings {
 
     public void setSsl(boolean ssl) {
         this.ssl = ssl;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ClientSettings that = (ClientSettings) o;
+        return port == that.port && ssl == that.ssl && Objects.equals(ip, that.ip) && Objects.equals(model, that.model);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ip, port, model, ssl);
     }
 }

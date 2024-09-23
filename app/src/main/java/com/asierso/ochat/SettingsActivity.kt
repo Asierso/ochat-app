@@ -103,7 +103,7 @@ class SettingsActivity : AppCompatActivity() {
         val settings = ClientSettings().apply {
             ip = findViewById<TextInputEditText>(R.id.lbl_llamaip).text.toString().trim()
             port = (findViewById<TextInputEditText>(R.id.lbl_llamaport).text.toString().trim()).toInt()
-            model = findViewById<Spinner>(R.id.spinner_llamamodel).selectedItem.toString()
+            model = findViewById<Spinner>(R.id.spinner_llamamodel).selectedItem?.toString()
             isSsl = findViewById<RadioButton>(R.id.radio_https).isChecked
         }
 

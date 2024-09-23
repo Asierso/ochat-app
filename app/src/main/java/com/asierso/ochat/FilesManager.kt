@@ -32,26 +32,26 @@ class FilesManager {
             return clientset
         }
 
-        fun saveConversation(context: Context, modelName: String, messages: Array<LlamaMessage>){
+        fun saveConversation(context: Context, chatName: String, messages: Array<LlamaMessage>){
             //Create chats dir if not exists
             if(!File("${context.filesDir}/chats").exists())
                 File("${context.filesDir}/chats").mkdir()
 
-            Log.d("deb","${context.filesDir}/chats/chat_${modelName.replace("-", "_")}.json")
+            Log.d("deb","${context.filesDir}/chats/chat_${chatName.replace("-", "_").hashCode()}.json")
 
-            BufferedWriter(FileWriter("${context.filesDir}/chats/chat_${modelName.replace("-","_")}.json")).use{
+            BufferedWriter(FileWriter("${context.filesDir}/chats/chat_${chatName.replace("-","_").hashCode()}.json")).use{
                 it.write(Gson().toJson(messages))
             }
         }
 
-        fun loadConversation(context: Context, modelName : String, ) : Array<LlamaMessage>?{
+        fun loadConversation(context: Context, chatName : String ) : Array<LlamaMessage>?{
             //Detects if previous config file exists
-            if(!File("${context.filesDir}/chats/chat_${modelName.replace("-","_")}.json").exists())
+            if(!File("${context.filesDir}/chats/chat_${chatName.replace("-","_").hashCode()}.json").exists())
                 return null
 
             //Loads config
             var messages: Array<LlamaMessage>
-            BufferedReader(FileReader("${context.filesDir}/chats/chat_${modelName.replace("-","_")}.json")).use{
+            BufferedReader(FileReader("${context.filesDir}/chats/chat_${chatName.replace("-","_").hashCode()}.json")).use{
                 messages = Gson().fromJson(it.readText(),Array<LlamaMessage>::class.java)
             }
             return messages
@@ -60,6 +60,10 @@ class FilesManager {
         fun removeAllChats(context: Context){
             if(File("${context.filesDir}/chats").exists())
                 File("${context.filesDir}/chats").deleteRecursively()
+        }
+
+        fun chatExists(context: Context, chatName: String) : Boolean{
+            return File("${context.filesDir}/chats/chat_${chatName.replace("-","_").hashCode()}.json").exists()
         }
 
     }
