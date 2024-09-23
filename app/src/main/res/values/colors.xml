@@ -2,8 +2,14 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#D7D7D7</color>
+
     <color name="ia_wrote">#7A757F</color>
-    <color name="user_wrote">#895EDB</color>
+    <color name="ia_wrote_lineal">#615E66</color>
     <color name="ia_wrote_fore">#F0F0F0</color>
+
+    <color name="user_wrote">#895EDB</color>
+    <color name="user_wrote_lineal">#7245C8</color>
     <color name="user_wrote_fore">#F0F0F0</color>
+
+    <color name="plain_layouts">#373737</color>
 </resources>

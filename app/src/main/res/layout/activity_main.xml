@@ -7,12 +7,31 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@color/plain_layouts"
+        android:orientation="horizontal"
+        android:id="@+id/layout_top_bar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:gravity="left|center">
 
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/baseline_settings_24"
+            app:tint="@color/white"
+            android:padding="5dp"
+            android:layout_marginStart="10dp"/>
+    </LinearLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:id="@+id/scr_message_screen"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layout_top_bar"
         app:layout_constraintBottom_toTopOf="@id/layout_messages_bar">
     <LinearLayout
         android:id="@+id/message_layout"
@@ -20,9 +39,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingStart="15dp"
-        android:paddingTop="60dp"
         android:paddingEnd="15dp"
-        android:paddingBottom="40dp"
         android:layout_marginBottom="50dp">
 
     </LinearLayout>
@@ -36,9 +53,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#373737"
+        android:background="@drawable/bottom_bar_layout"
         android:orientation="horizontal"
-        android:paddingTop="10dp"
+        android:paddingTop="20dp"
         android:paddingBottom="20dp"
         android:id="@+id/layout_messages_bar"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -51,7 +68,7 @@
             android:layout_marginEnd="15dp"
             android:layout_marginBottom="30dp"
 
-            android:background="#373737"
+            android:background="@color/plain_layouts"
             android:orientation="horizontal"
             android:stretchColumns="2"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -81,12 +98,15 @@
                     android:layout_height="match_parent"
                     android:layout_marginStart="10dp"
                     android:padding="2dp"
-                    android:src="@drawable/baseline_send_24" />
+                    android:src="@drawable/baseline_send_24"
+                    app:tint="@color/white"/>
             </TableRow>
         </TableLayout>
     </LinearLayout>
 
-    <!--Only debug tools-->
+
+
+    <!--Only debug tools
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
@@ -111,6 +131,6 @@
             android:layout_marginLeft="20dp"
             android:text="Set"
             android:id="@+id/btn_url_config"/>
-    </LinearLayout>
+    </LinearLayout>-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

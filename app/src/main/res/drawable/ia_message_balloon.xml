@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item>
+        <shape android:shape="rectangle" android:tint="@color/ia_wrote_lineal">
+            <corners android:radius="10dp"></corners>
+        </shape>
+    </item>
+    <item android:bottom="3dp">
+        <shape android:shape="rectangle" android:tint="@color/ia_wrote">
+            <corners android:radius="10dp"></corners>
+        </shape>
+    </item>
+</layer-list>

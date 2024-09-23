@@ -11,11 +11,13 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.ActionBar.LayoutParams
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.cardview.widget.CardView
 import androidx.core.view.marginTop
 import androidx.core.view.setPadding
@@ -41,8 +43,8 @@ class MainActivity : AppCompatActivity() {
     enum class Side {User, IA}
     private lateinit var conversation : ArrayList<LlamaMessage>
 
-    private var url : String = "http://192.168.1.72:11434"
-    private var model : String = "llama3"
+    private var url : String = ""
+    private var model : String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,7 +61,10 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageView>(R.id.btn_send).setOnClickListener {
             val msg = findViewById<TextInputEditText>(R.id.tf_message)
             try {
+                //Lock send button
                 changeSendAble(false)
+
+
                 conversation.add(LlamaMessage(LlamaMessage.USER_ROLE,msg.text.toString()))
                 renderMessageView(Side.User).append(msg.text.toString())
                 sendPrompt(msg.text.toString())
@@ -70,13 +75,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         //URL Change
+        /*
         findViewById<Button>(R.id.btn_url_config).setOnClickListener{
             url = findViewById<EditText>(R.id.tf_url_config).text.toString().trim()
             model = findViewById<EditText>(R.id.tf_model_config).text.toString().trim()
             conversation = arrayListOf()
-            findViewById<LinearLayout>(R.id.message_layout).removeAllViewsInLayout()
+            findViewById<LinearLayout>(R.id.message_layout).removeAllViews()
             Toast.makeText(this, "Success", Toast.LENGTH_LONG).show()
-        }
+        }*/
     }
 
     private fun changeSendAble(status : Boolean){
@@ -85,11 +91,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun rescale() {
         val text = findViewById<TextInputLayout>(R.id.tf_message_layout)
-
+        val msgLayout = findViewById<LinearLayout>(R.id.layout_messages_bar)
+        val topLayout = findViewById<LinearLayout>(R.id.layout_top_bar)
         //Adjust text layout
         var layout = text.layoutParams
         layout.width = resources.displayMetrics.widthPixels - 230
         text.layoutParams = layout
+
+        //Adjust scrollview
+        //findViewById<ScrollView>(R.id.scr_message_screen).layoutParams.height = resources.displayMetrics.heightPixels - msgLayout.layoutParams.height - topLayout.layoutParams.height
     }
 
     private fun renderMessageView(side : Side) : TextView{
@@ -99,11 +109,20 @@ class MainActivity : AppCompatActivity() {
         val card = MaterialCardView(this).apply{
             radius = 27f
             elevation = 10f
+
+            //Set card resolution
             minimumHeight = Global.getPixels(ctx,70)
             setContentPadding(Global.getPixels(ctx,10),Global.getPixels(ctx,10),Global.getPixels(ctx,10),Global.getPixels(ctx,10))
-            setCardBackgroundColor(getColor(if(side == Side.User) R.color.user_wrote else R.color.ia_wrote))
+
+            //Set card design
+            if(side == Side.User)
+                setBackgroundDrawable(AppCompatResources.getDrawable(ctx,R.drawable.user_message_balloon))
+            else
+                setBackgroundDrawable(AppCompatResources.getDrawable(ctx,R.drawable.ia_message_balloon))
+
+            //setCardBackgroundColor(getColor(if(side == Side.User) R.color.user_wrote else R.color.ia_wrote))
             layoutParams = LinearLayout.LayoutParams(
-                Global.getPixels(ctx,200),
+                Global.getPixels(ctx,250),
                 LayoutParams.WRAP_CONTENT
             ).apply{
                 setMargins(0, Global.getPixels(ctx,10),0,Global.getPixels(ctx,10 ))
@@ -165,15 +184,15 @@ class MainActivity : AppCompatActivity() {
                     }
                 }*/
 
-                llama.fetchRealtime(
-                    dialogbuilder.build()
-                ) { e ->
-                    lifecycleScope.launch {
-                        withContext(Dispatchers.Main) {
-                            updateView.append(e.message.content.toString())
+                    llama.fetchRealtime(
+                        dialogbuilder.build()
+                    ) { e ->
+                        lifecycleScope.launch {
+                            withContext(Dispatchers.Main) {
+                                updateView.append(e.message.content.toString())
+                            }
                         }
                     }
-                }
             }
             conversation.add(LlamaMessage(LlamaMessage.ASSISTANT_ROLE,res.message.content))
             changeSendAble(true)
