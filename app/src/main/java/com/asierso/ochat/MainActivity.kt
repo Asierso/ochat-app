@@ -109,6 +109,10 @@ class MainActivity : AppCompatActivity() {
         val prevTmp = settings
         settings = FilesManager.loadSettings(this)
 
+        //Avoid null pointer exception
+        if(settings == null)
+            return
+
         //Detects changes in settings and clear chats if is it or clear chat if is removed
         if (settings.hashCode() != prevTmp.hashCode() || !FilesManager.chatExists(this,"${settings!!.ip}_${settings!!.model}")) {
             findViewById<LinearLayout>(R.id.message_layout).removeAllViews()

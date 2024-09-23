@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
 
 class SettingsActivity : AppCompatActivity() {
     lateinit var context : Context
-    lateinit var settings : ClientSettings
+    var settings : ClientSettings? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -42,13 +42,25 @@ class SettingsActivity : AppCompatActivity() {
         loadConfig()
 
         findViewById<TextInputEditText>(R.id.lbl_llamaip).setOnFocusChangeListener() { view,_ ->
-            settings.ip = findViewById<TextInputEditText>(R.id.lbl_llamaip).text.toString()
-            fetchModels(settings)
+            tryGetModels()
         }
 
         findViewById<TextInputEditText>(R.id.lbl_llamaport).setOnFocusChangeListener { _,_ ->
-            settings.port = (findViewById<TextInputEditText>(R.id.lbl_llamaport).text.toString().trim()).toInt()
-            fetchModels(settings)
+            tryGetModels()
+        }
+    }
+
+    private fun tryGetModels(){
+        val ip = findViewById<TextInputEditText>(R.id.lbl_llamaip).text.toString()
+        val port = findViewById<TextInputEditText>(R.id.lbl_llamaport).text.toString().trim()
+        if(!ip.isBlank() && !port.isBlank()) {
+            if(settings==null)
+                settings = ClientSettings()
+
+            settings!!.ip = ip
+            settings!!.port = port.toInt()
+            settings!!.isSsl = findViewById<RadioButton>(R.id.radio_https).isChecked
+            fetchModels(settings!!)
         }
     }
 
@@ -81,15 +93,15 @@ class SettingsActivity : AppCompatActivity() {
         settings = FilesManager.loadSettings(context) ?: return
 
         //Llama model
-        fetchModels(settings)
+        fetchModels(settings!!)
 
         //Connection IP port
-        findViewById<TextInputEditText>(R.id.lbl_llamaip).setText(settings.ip)
-        findViewById<TextInputEditText>(R.id.lbl_llamaport).setText(settings.port.toString())
+        findViewById<TextInputEditText>(R.id.lbl_llamaip).setText(settings!!.ip)
+        findViewById<TextInputEditText>(R.id.lbl_llamaport).setText(settings!!.port.toString())
 
         //Protocol
-        findViewById<RadioButton>(R.id.radio_https).isChecked = (settings.isSsl)
-        findViewById<RadioButton>(R.id.radio_http).isChecked = (!settings.isSsl)
+        findViewById<RadioButton>(R.id.radio_https).isChecked = (settings!!.isSsl)
+        findViewById<RadioButton>(R.id.radio_http).isChecked = (!settings!!.isSsl)
     }
 
     private fun saveConfig(){
