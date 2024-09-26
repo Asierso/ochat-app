@@ -237,10 +237,7 @@ class MainActivity : AppCompatActivity() {
                                 updateView.append(e.message.content.toString())
                                 val scroll =
                                     findViewById<ScrollView>(R.id.scr_layout_message_screen)
-                                scroll.scrollTo(
-                                    0,
-                                    scroll.bottom + (resources.displayMetrics.densityDpi * 10)
-                                )
+                                scroll.smoothScrollTo(0,scroll.height)
                             }
                         }
                     }

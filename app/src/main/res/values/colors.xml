@@ -12,4 +12,6 @@
 
     <color name="plain_layouts">#373737</color>
     <color name="plain_layouts_darker">#141414</color>
+
+    <color name="ic_launcher_background">#925BBA</color>
 </resources>
