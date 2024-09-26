@@ -1,7 +1,6 @@
 package com.asierso.ochat
 
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import com.asierso.ochat.models.ClientSettings
 
 class Global {

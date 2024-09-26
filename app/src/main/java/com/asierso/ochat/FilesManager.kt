@@ -13,10 +13,10 @@ import java.io.FileWriter
 
 class FilesManager {
     companion object {
-        fun saveSettings(context: Context, clientset : ClientSettings){
+        fun saveSettings(context: Context, clientSettings : ClientSettings){
             //Save config
             BufferedWriter(FileWriter("${context.filesDir}con_settings.json")).use{
-                it.write(Gson().toJson(clientset))
+                it.write(Gson().toJson(clientSettings))
             }
         }
         fun loadSettings(context: Context) : ClientSettings?{
@@ -25,11 +25,11 @@ class FilesManager {
                 return null
 
             //Loads config
-            var clientset : ClientSettings
+            var clientSettings : ClientSettings
             BufferedReader(FileReader("${context.filesDir}con_settings.json")).use{
-                clientset = Gson().fromJson(it.readText(),ClientSettings::class.java)
+                clientSettings = Gson().fromJson(it.readText(),ClientSettings::class.java)
             }
-            return clientset
+            return clientSettings
         }
 
         fun saveConversation(context: Context, chatName: String, messages: Array<LlamaMessage>){

@@ -14,7 +14,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.ActionBar.LayoutParams
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import com.asierso.ochat.api.*
 import com.asierso.ochat.api.builder.LlamaDialogsBuilder
@@ -36,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var conversation: ArrayList<LlamaMessage>
 
     private var settings: ClientSettings? = null
-    lateinit var context: Context
+    private lateinit var context: Context
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,14 +59,14 @@ class MainActivity : AppCompatActivity() {
 
                 //Send message and update view
                 conversation.add(LlamaMessage(LlamaMessage.USER_ROLE, msg.text.toString()))
-                if (!msg.text.toString().isBlank())
+                if (msg.text.toString().isNotBlank())
                     renderMessageView(Side.User).append(msg.text.toString())
 
                 //Send message and clear text
-                sendPrompt(msg.text.toString())
+                sendPrompt()
                 msg.setText("")
             } catch (e: Exception) {
-                Toast.makeText(this, "Error at connecting " + e.toString(), Toast.LENGTH_SHORT)
+                Toast.makeText(this, "Error at connecting ${e.message}", Toast.LENGTH_SHORT)
                     .show()
             }
         }
@@ -83,7 +82,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadConversation() {
-        if (settings != null && settings!!.model != null && !settings!!.model.isBlank())
+        if (settings != null && settings!!.model != null && settings!!.model.isNotBlank())
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
                     val loadedConversation = FilesManager.loadConversation(
@@ -95,7 +94,7 @@ class MainActivity : AppCompatActivity() {
                         for (balloonMessage in conversation)
                             withContext(Dispatchers.Main) {
                                 renderMessageView(if (balloonMessage.role.equals("user")) Side.User else Side.IA)
-                                    .setText(balloonMessage.content.toString())
+                                    .text = balloonMessage.content.toString()
                             }
                     }
                 }
@@ -125,7 +124,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun changeSendAble(status: Boolean) {
-        val sendBtn = findViewById<ImageView>(R.id.btn_send);
+        val sendBtn = findViewById<ImageView>(R.id.btn_send)
         sendBtn.isEnabled = status
         if (!status)
             sendBtn.setImageDrawable(
@@ -194,7 +193,7 @@ class MainActivity : AppCompatActivity() {
 
         //Create text
         val txt = TextView(this).apply {
-            setText("")
+            text = ""
             textSize = 16f
             setTextColor(getColor(if (side == Side.User) R.color.user_wrote_fore else R.color.ia_wrote_fore))
             layoutParams = LinearLayout.LayoutParams(
@@ -208,7 +207,7 @@ class MainActivity : AppCompatActivity() {
         return txt
     }
 
-    private fun sendPrompt(msg: String) {
+    private fun sendPrompt() {
         val updateView: TextView = renderMessageView(Side.IA)
         if (settings == null) {
             Toast.makeText(this, "Error, specify valid settings", Toast.LENGTH_SHORT).show()
@@ -219,19 +218,19 @@ class MainActivity : AppCompatActivity() {
             val res = withContext(Dispatchers.IO) {
                 val llama = LlamaConnection(Global.bakeUrl(settings) ?: "")
 
-                val llbb = LlamaRequestBaseBuilder()
+                val llamaRequestBase = LlamaRequestBaseBuilder()
                     .useModel(settings?.model.toString())
                     .withStream(true)
                     .build()
 
-                val dialogbuilder = LlamaDialogsBuilder(llbb)
+                val dialogBuilder = LlamaDialogsBuilder(llamaRequestBase)
                 for (handle in conversation)
-                    dialogbuilder.createDialog(handle.role, handle.content)
+                    dialogBuilder.createDialog(handle.role, handle.content)
 
-                var llres: LlamaResponse? = null
+                var llamaResponse: LlamaResponse?
                 try {
-                    llres = llama.fetchRealtime(
-                        dialogbuilder.build()
+                    llamaResponse = llama.fetchRealtime(
+                        dialogBuilder.build()
                     ) { e ->
                         lifecycleScope.launch {
                             withContext(Dispatchers.Main) {
@@ -246,7 +245,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 } catch (e: LlamaConnectionException) {
-                    llres = null
+                    llamaResponse = null
                     withContext(Dispatchers.Main) {
                         Toast.makeText(context, "Error ${e.message}", Toast.LENGTH_SHORT).show()
 
@@ -256,7 +255,7 @@ class MainActivity : AppCompatActivity() {
 
                     }
                 }
-                return@withContext llres
+                return@withContext llamaResponse
             }
             if (res != null) {
                 conversation.add(LlamaMessage(LlamaMessage.ASSISTANT_ROLE, res.message.content))

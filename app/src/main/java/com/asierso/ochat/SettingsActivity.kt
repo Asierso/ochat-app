@@ -19,8 +19,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class SettingsActivity : AppCompatActivity() {
-    lateinit var context : Context
-    var settings : ClientSettings? = null
+    private lateinit var context : Context
+    private var settings : ClientSettings? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -41,7 +42,7 @@ class SettingsActivity : AppCompatActivity() {
 
         loadConfig()
 
-        findViewById<TextInputEditText>(R.id.lbl_llamaip).setOnFocusChangeListener() { view,_ ->
+        findViewById<TextInputEditText>(R.id.lbl_llamaip).setOnFocusChangeListener { _,_ ->
             tryGetModels()
         }
 
@@ -53,7 +54,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun tryGetModels(){
         val ip = findViewById<TextInputEditText>(R.id.lbl_llamaip).text.toString()
         val port = findViewById<TextInputEditText>(R.id.lbl_llamaport).text.toString().trim()
-        if(!ip.isBlank() && !port.isBlank()) {
+        if(ip.isNotBlank() && port.isNotBlank()) {
             if(settings==null)
                 settings = ClientSettings()
 
@@ -66,13 +67,12 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun fetchModels(settings: ClientSettings){
         val url = Global.bakeUrl(settings)
-        if(url==null) return
+        url?: return
 
         lifecycleScope.launch {
             withContext(Dispatchers.IO){
-                var models : ArrayList<String>? = null
                 try {
-                    models = LlamaConnection(url).avaiableModelsArrayList
+                    val models = LlamaConnection(url).avaiableModelsArrayList
                     withContext(Dispatchers.Main){
                         //Adjust dropdown
                         val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, models!!)
