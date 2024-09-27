@@ -1,7 +1,8 @@
 # OCHAT - Ollama Chat
 Ochat is a chat Android app client for Ollama AI. Ochat supports chats with different Ollama models
 
->[!NOTE] You need to deploy Ollama server by you way to use the app
+>[!NOTE] 
+>You need to deploy Ollama server by you way to use the app
 
 ## 📱 Requirements
 To use this app you need at least Android 7.0 or upper
