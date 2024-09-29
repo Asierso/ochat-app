@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".SettingsActivity">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="100dp"
@@ -14,6 +15,7 @@
         android:id="@+id/layout_top_bar"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:paddingTop="20dp"
         android:gravity="left|center">
 
         <ImageView
@@ -34,6 +36,7 @@
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/layout_settings_container"
         app:layout_constraintTop_toBottomOf="@id/layout_top_bar"
         app:layout_constraintStart_toStartOf="parent">
 
@@ -170,6 +173,9 @@
                 android:text="Clear chats"
                 android:layout_marginStart="5dp"/>
         </TableRow>
+
     </TableLayout>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

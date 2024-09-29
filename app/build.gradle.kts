@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.asierso.ochat"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -35,6 +35,11 @@ android {
     }
     buildFeatures {
         viewBinding = true;
+    }
+    packaging {
+        resources {
+            excludes.add("META-INF/DEPENDENCIES")
+        }
     }
 }
 

@@ -2,6 +2,8 @@ package com.asierso.ochat
 
 import android.content.Context
 import android.os.Bundle
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageView
@@ -18,9 +20,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+
 class SettingsActivity : AppCompatActivity() {
-    private lateinit var context : Context
-    private var settings : ClientSettings? = null
+    private lateinit var context: Context
+    private var settings: ClientSettings? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,36 +31,44 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_settings)
         context = this
 
-        findViewById<ImageView>(R.id.btn_back).setOnClickListener{
+        //Allow all downloads
+        val policy = ThreadPolicy.Builder().permitAll().build()
+        StrictMode.setThreadPolicy(policy)
+
+        findViewById<ImageView>(R.id.btn_back).setOnClickListener {
             finish()
         }
 
-        findViewById<Button>(R.id.btn_save).setOnClickListener{
+        findViewById<Button>(R.id.btn_save).setOnClickListener {
             saveConfig()
         }
 
-        findViewById<Button>(R.id.btn_delete_all).setOnClickListener{
+        findViewById<Button>(R.id.btn_delete_all).setOnClickListener {
             FilesManager.removeAllChats(context)
         }
 
         loadConfig()
 
-        findViewById<TextInputEditText>(R.id.lbl_llamaip).setOnFocusChangeListener { _,_ ->
+        findViewById<TextInputEditText>(R.id.lbl_llamaip).setOnFocusChangeListener { _, _ ->
             tryGetModels()
         }
 
-        findViewById<TextInputEditText>(R.id.lbl_llamaport).setOnFocusChangeListener { _,_ ->
+        findViewById<TextInputEditText>(R.id.lbl_llamaport).setOnFocusChangeListener { _, _ ->
             tryGetModels()
         }
     }
 
-    private fun tryGetModels(){
+    private fun tryGetModels() {
+        //Get IP and port from view
         val ip = findViewById<TextInputEditText>(R.id.lbl_llamaip).text.toString()
         val port = findViewById<TextInputEditText>(R.id.lbl_llamaport).text.toString().trim()
-        if(ip.isNotBlank() && port.isNotBlank()) {
-            if(settings==null)
+
+        //Try to fetch models if data is valid
+        if (ip.isNotBlank() && port.isNotBlank()) {
+            if (settings == null)
                 settings = ClientSettings()
 
+            //Update settings with view data
             settings!!.ip = ip
             settings!!.port = port.toInt()
             settings!!.isSsl = findViewById<RadioButton>(R.id.radio_https).isChecked
@@ -65,31 +76,38 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun fetchModels(settings: ClientSettings){
+    private fun fetchModels(settings: ClientSettings) {
+        //Create connection url
         val url = Global.bakeUrl(settings)
-        url?: return
+        url ?: return
 
         lifecycleScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(Dispatchers.IO) {
                 try {
                     val models = LlamaConnection(url).avaiableModelsArrayList
-                    withContext(Dispatchers.Main){
-                        //Adjust dropdown
-                        val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, models!!)
+                    withContext(Dispatchers.Main) {
+                        //Crete adapter for spinner
+                        val adapter =
+                            ArrayAdapter(context, android.R.layout.simple_spinner_item, models!!)
                         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                         findViewById<Spinner>(R.id.spinner_llamamodel).adapter = adapter
 
-                        if(adapter.getPosition(settings.model) >= 0)
-                            findViewById<Spinner>(R.id.spinner_llamamodel).setSelection(adapter.getPosition(settings.model))
+                        //Load last selected model and update view
+                        if (adapter.getPosition(settings.model) >= 0)
+                            findViewById<Spinner>(R.id.spinner_llamamodel).setSelection(
+                                adapter.getPosition(
+                                    settings.model
+                                )
+                            )
                     }
-                } catch(ignore : Exception){
+                } catch (ignore: Exception) {
                 }
             }
 
         }
     }
 
-    private fun loadConfig(){
+    private fun loadConfig() {
         settings = FilesManager.loadSettings(context) ?: return
 
         //Llama model
@@ -104,22 +122,24 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<RadioButton>(R.id.radio_http).isChecked = (!settings!!.isSsl)
     }
 
-    private fun saveConfig(){
+    private fun saveConfig() {
         //Validate data
-        if((findViewById<TextInputEditText>(R.id.lbl_llamaport).text.toString()).toInt() !in 0..65535){
-            Toast.makeText(context,"Error, port should be between 0 and 65535",Toast.LENGTH_SHORT).show()
+        if ((findViewById<TextInputEditText>(R.id.lbl_llamaport).text.toString()).toInt() !in 0..65535) {
+            Toast.makeText(context, "Error, port should be between 0 and 65535", Toast.LENGTH_SHORT)
+                .show()
             return
         }
 
         //Save settings
         val settings = ClientSettings().apply {
             ip = findViewById<TextInputEditText>(R.id.lbl_llamaip).text.toString().trim()
-            port = (findViewById<TextInputEditText>(R.id.lbl_llamaport).text.toString().trim()).toInt()
+            port =
+                (findViewById<TextInputEditText>(R.id.lbl_llamaport).text.toString().trim()).toInt()
             model = findViewById<Spinner>(R.id.spinner_llamamodel).selectedItem?.toString()
             isSsl = findViewById<RadioButton>(R.id.radio_https).isChecked
         }
 
-        FilesManager.saveSettings(context,settings)
+        FilesManager.saveSettings(context, settings)
         finish()
     }
 }
