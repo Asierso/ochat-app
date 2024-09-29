@@ -88,7 +88,7 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:hint="1234"
+                    android:hint="Port"
                     android:inputType="number"
                     android:id="@+id/lbl_llamaport"/>
             </com.google.android.material.textfield.TextInputLayout>
