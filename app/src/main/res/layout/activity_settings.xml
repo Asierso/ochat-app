@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:paddingTop="20dp"
-        android:gravity="left|center">
+        android:gravity="start|center">
 
         <ImageView
             android:layout_width="50dp"
@@ -105,19 +105,6 @@
                 android:text="Model name"
                 android:padding="10dp"/>
 
-            <!--com.google.android.material.textfield.TextInputLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:padding="10dp"
-                android:gravity="end|center">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:hint="llama3"
-                    android:id="@+id/lbl_llamamodel"/>
-            </com.google.android.material.textfield.TextInputLayout-->
             <Spinner android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
