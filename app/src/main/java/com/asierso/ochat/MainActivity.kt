@@ -6,15 +6,11 @@ import android.os.Bundle
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.ScrollView
-import android.widget.TableRow
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.asierso.ochat.api.*
 import com.asierso.ochat.api.builder.LlamaDialogsBuilder
@@ -23,9 +19,9 @@ import com.asierso.ochat.api.handlers.LlamaConnectionException
 import com.asierso.ochat.api.models.LlamaMessage
 import com.asierso.ochat.api.models.LlamaResponse
 import com.asierso.ochat.components.MessageCardView
+import com.asierso.ochat.components.MessageEdit
+import com.asierso.ochat.databinding.ActivityMainBinding
 import com.asierso.ochat.models.ClientSettings
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,68 +33,69 @@ class MainActivity : AppCompatActivity() {
 
     private var settings: ClientSettings? = null
     private lateinit var context: Context
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var messageEdit: MessageEdit
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         context = this
 
-        //Rescale UI
-        rescale()
+        //Crete messages bar
+        messageEdit = MessageEdit(context)
+        binding.layoutMessagesBarComponents.addView(messageEdit.getMessageEditCard(),0)
 
         //Init messages stack
         conversation = arrayListOf()
 
         //Button logic
-        findViewById<ImageView>(R.id.btn_send).setOnClickListener {
-            val msg = findViewById<TextInputEditText>(R.id.tf_message)
+        binding.btnSend.setOnClickListener {
             try {
                 //Lock send button
                 isSendEnabled(false)
 
                 //Send message and update view
-                conversation.add(LlamaMessage(LlamaMessage.USER_ROLE, msg.text.toString()))
+                conversation.add(LlamaMessage(LlamaMessage.USER_ROLE, messageEdit.getText().toString()))
 
                 //Create message balloon only if user wrote some text
-                if (msg.text.toString().isNotBlank()) {
+                if (messageEdit.getText().isNotBlank()) {
                     val msgview = MessageCardView(context, Side.User)
-                    msgview.getTextComponent().append(msg.text.toString())
+                    msgview.getTextComponent().append(messageEdit.getText())
                     msgview.stopLoading()
                     findViewById<LinearLayout>(R.id.message_layout).addView(msgview.getView())
                 }
 
                 //Close virtual keyboard
                 (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
-                    .hideSoftInputFromWindow(msg.windowToken,0)
+                    .hideSoftInputFromWindow(messageEdit.getMessageEditCard().windowToken, 0)
 
                 //Send message and clear text
                 sendPrompt()
-                msg.setText("")
+                messageEdit.clear()
+                scrollFinal()
             } catch (e: Exception) {
                 Toast.makeText(this, "Error at connecting ${e.message}", Toast.LENGTH_SHORT)
                     .show()
             }
         }
 
-        findViewById<ImageView>(R.id.btn_settings).setOnClickListener {
+        binding.btnSettings.setOnClickListener {
             val settings = Intent(context, SettingsActivity::class.java)
             startActivity(settings)
-        }
-
-        findViewById<TextInputEditText>(R.id.tf_message).doOnTextChanged { text, start, before, count ->
-            var lines = findViewById<TextInputEditText>(R.id.tf_message).lineCount
-            lines = if (lines > 10) 10 else lines
-
-            findViewById<TextInputLayout>(R.id.tf_message_layout).layoutParams = TableRow.LayoutParams(
-                resources.displayMetrics.widthPixels - 230,
-                Global.getPixels(this,60) + ((lines-1) * Global.getPixels(this,19))
-            )
         }
 
         settings = FilesManager.loadSettings(this)
         loadConversation()
 
+    }
+
+    private fun scrollFinal() {
+        binding.scrLayoutMessageScreen
+            .smoothScrollTo(0, binding.messageLayout.height + binding.layoutMessagesBar.height)
     }
 
     private fun loadConversation() {
@@ -118,11 +115,18 @@ class MainActivity : AppCompatActivity() {
                         for (balloonMessage in conversation)
                             withContext(Dispatchers.Main) {
                                 //Create all message balloons
-                                val msgview = MessageCardView(context,if (balloonMessage.role.equals("user")) Side.User else Side.IA)
+                                val msgview = MessageCardView(
+                                    context,
+                                    if (balloonMessage.role.equals("user")) Side.User else Side.IA
+                                )
                                 msgview.getTextComponent().text = balloonMessage.content.toString()
                                 findViewById<LinearLayout>(R.id.message_layout).addView(msgview.getView())
                                 msgview.stopLoading()
                             }
+                        //Make autoscroll in another coroutine when load ends
+                        withContext(Dispatchers.Main){
+                            scrollFinal()
+                        }
                     }
                 }
             }
@@ -136,22 +140,29 @@ class MainActivity : AppCompatActivity() {
         settings = FilesManager.loadSettings(this)
 
         //Avoid null pointer exception
-        if(settings == null)
+        if (settings == null)
             return
 
         //Detects changes in settings and clear chats if is it or clear chat if is removed
-        if (settings.hashCode() != prevTmp.hashCode() || !FilesManager.chatExists(this,"${settings!!.ip}_${settings!!.model}")) {
-            findViewById<LinearLayout>(R.id.message_layout).removeAllViews()
+        if (settings.hashCode() != prevTmp.hashCode() || !FilesManager.chatExists(
+                this,
+                "${settings!!.ip}_${settings!!.model}"
+            )
+        ) {
+            binding.messageLayout.removeAllViews()
             conversation.clear()
 
             //Try to charge if there is another saved conversation
             if (settings?.model != null && settings?.ip != null)
                 loadConversation()
         }
+
+        //Make autoscroll
+        scrollFinal()
     }
 
     private fun isSendEnabled(status: Boolean) {
-        val sendBtn = findViewById<ImageView>(R.id.btn_send)
+        val sendBtn = binding.btnSend
         sendBtn.isEnabled = status
         if (!status) {
             sendBtn.setImageDrawable(
@@ -160,9 +171,8 @@ class MainActivity : AppCompatActivity() {
                     R.drawable.spinner_shape
                 )
             )
-            sendBtn.animation =AnimationUtils.loadAnimation(context, R.anim.load_rotation_lineal)
-        }
-        else {
+            sendBtn.animation = AnimationUtils.loadAnimation(context, R.anim.load_rotation_bouncing)
+        } else {
             sendBtn.setImageDrawable(
                 AppCompatResources.getDrawable(
                     this,
@@ -173,23 +183,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun rescale() {
-        val text = findViewById<TextInputLayout>(R.id.tf_message_layout)
-
-        //Adjust text layout
-        val layout = text.layoutParams
-        layout.width = resources.displayMetrics.widthPixels - 230
-        text.layoutParams = layout
-    }
-
     private fun sendPrompt() {
         //Create message balloon
-        val messageView = MessageCardView(context,Side.IA)
-        findViewById<LinearLayout>(R.id.message_layout).addView(messageView.getView())
+        val messageView = MessageCardView(context, Side.IA)
+        binding.messageLayout.addView(messageView.getView())
 
         //Make autoscroll
-        findViewById<ScrollView>(R.id.scr_layout_message_screen)
-            .smoothScrollTo(0,findViewById<LinearLayout>(R.id.message_layout).height)
+        scrollFinal()
 
         //Check if settings are correct
         if (settings == null) {
@@ -223,10 +223,8 @@ class MainActivity : AppCompatActivity() {
                                 messageView.stopLoading()
                                 messageView.getTextComponent().append(e.message.content.toString())
 
-
                                 //Make autoscroll
-                                findViewById<ScrollView>(R.id.scr_layout_message_screen)
-                                    .smoothScrollTo(0,findViewById<LinearLayout>(R.id.message_layout).height)
+                                scrollFinal()
                             }
                         }
                     }

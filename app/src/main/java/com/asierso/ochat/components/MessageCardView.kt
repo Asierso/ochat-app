@@ -9,6 +9,8 @@ import android.widget.TextView
 import androidx.appcompat.app.ActionBar.LayoutParams
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.cardview.widget.CardView
+import androidx.core.view.marginBottom
+import androidx.core.view.setMargins
 import androidx.core.widget.doOnTextChanged
 import com.asierso.ochat.Global
 import com.asierso.ochat.MainActivity.Side
@@ -76,7 +78,9 @@ class MessageCardView(private val context: Context, private val side: Side) {
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT
-            )
+            ).apply {
+                setMargins(0,0,0,10) //Little visual fix
+            }
         }
 
         //Add dots container

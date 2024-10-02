@@ -13,4 +13,6 @@
     <color name="plain_layouts_darker">#141414</color>
 
     <color name="ic_launcher_background">#925BBA</color>
+
+    <color name="ed_message_background">#1E1E26</color>"
 </resources>
