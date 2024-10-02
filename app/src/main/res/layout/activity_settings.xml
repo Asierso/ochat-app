@@ -40,6 +40,14 @@
         app:layout_constraintTop_toBottomOf="@id/layout_top_bar"
         app:layout_constraintStart_toStartOf="parent">
 
+        <!--General settings-->
+        <TextView
+            android:layout_width="match_parent"
+            android:gravity="center"
+            android:text="-- General --"
+            android:textColor="@color/txt_secondary"
+            android:padding="5dp"/>
+
         <!--URL -->
         <TableRow
             android:layout_height="wrap_content"
@@ -67,6 +75,7 @@
             </com.google.android.material.textfield.TextInputLayout>
         </TableRow>
 
+        <!--PORT-->
         <TableRow
             android:layout_height="wrap_content"
             android:layout_width="match_parent">
@@ -94,6 +103,7 @@
             </com.google.android.material.textfield.TextInputLayout>
         </TableRow>
 
+        <!--Model name -->
         <TableRow
             android:layout_height="wrap_content"
             android:layout_width="match_parent">
@@ -110,6 +120,8 @@
                 android:layout_weight="2"
                 android:id="@+id/spinner_llamamodel"/>
         </TableRow>
+
+        <!-- Protocol -->
         <TableRow
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
@@ -120,7 +132,8 @@
                 android:textSize="10pt"
                 android:layout_gravity="start|center"
                 android:text="Protocol"
-                android:padding="10dp"/>
+                android:padding="10dp"
+                android:paddingStart="0dp"/>
             <RadioGroup android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/rgroup_protocol">
 
                 <RadioButton
@@ -139,6 +152,36 @@
             </RadioGroup>
         </TableRow>
 
+        <!-- Flags settings -->
+        <TextView
+            android:layout_width="match_parent"
+            android:gravity="center"
+            android:text="-- Extra Functions --"
+            android:textColor="@color/txt_secondary"/>
+
+        <!--Use descriptions -->
+        <TableRow
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:paddingTop="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10pt"
+                android:layout_gravity="start|center"
+                android:text="Use descriptions"
+                android:padding="10dp"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:layout_marginEnd="10dp"
+            android:id="@+id/switch_use_descriptions" />
+        </TableRow>
+
+        <!-- Save clear-->
         <TableRow
             android:layout_height="wrap_content"
             android:layout_width="match_parent"

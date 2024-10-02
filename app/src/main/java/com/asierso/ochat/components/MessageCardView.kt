@@ -19,12 +19,25 @@ import com.google.android.material.card.MaterialCardView
 
 class MessageCardView(private val context: Context, private val side: Side) {
     private var loadAnimation: LinearLayout? = null
+    private var cardContainer : LinearLayout? = null
     private var card: CardView? = null
     private var text: TextView? = null
     private var isLoading = true
     private var dots = 0
 
     init {
+        //Create card and img container
+        cardContainer = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(0, Global.getPixels(context, 10), 0, Global.getPixels(context, 10))
+                gravity = if (side == Side.User) Gravity.END else Gravity.START
+            }
+        }
+
         //Create card
         card = MaterialCardView(context).apply {
             cardElevation =5f
@@ -62,10 +75,7 @@ class MessageCardView(private val context: Context, private val side: Side) {
             layoutParams = LinearLayout.LayoutParams(
                 Global.getPixels(context, 250),
                 LayoutParams.WRAP_CONTENT
-            ).apply {
-                setMargins(0, Global.getPixels(context, 10), 0, Global.getPixels(context, 10))
-                gravity = if (side == Side.User) Gravity.END else Gravity.START
-            }
+            )
 
 
         }
@@ -91,12 +101,28 @@ class MessageCardView(private val context: Context, private val side: Side) {
             orientation = LinearLayout.HORIZONTAL
         }
 
+        //Add image to card layout (only if is IA)
+        if(side == Side.IA){
+            cardContainer!!.addView(ImageView( context).apply {
+                setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ochat))
+                layoutParams = LinearLayout.LayoutParams(
+                    Global.getPixels(context, 40),
+                    Global.getPixels(context, 40)
+                ).apply {
+                    setMargins(0,0,20,0)
+                    gravity = Gravity.START
+                }
+
+            })
+        }
+
         //Create animation dots
         for(i in 0 until 3){
             loadAnimation!!.addView(createAnimationDot())
         }
 
         //Add text and animation to card
+        cardContainer!!.addView(card)
         card!!.addView(loadAnimation)
         card!!.addView(text)
         text!!.doOnTextChanged { _,_,_, count -> if(count > 0) card!!.removeView(loadAnimation) }
@@ -124,8 +150,8 @@ class MessageCardView(private val context: Context, private val side: Side) {
         return text!!
     }
 
-    fun getView() : CardView{
-        return card!!
+    fun getView() : LinearLayout{
+        return cardContainer!!
     }
 
     fun stopLoading(){

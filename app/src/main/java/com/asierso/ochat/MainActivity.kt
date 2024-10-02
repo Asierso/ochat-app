@@ -184,6 +184,10 @@ class MainActivity : AppCompatActivity() {
                 loadConversation()
         }
 
+        //Enable or disable descriptions
+        if(binding.layoutTopBarComponents.size == 2)
+            binding.layoutTopBarComponents[1].visibility = if(settings!!.isUseDescriptions) VISIBLE else GONE
+
         //Make autoscroll
         scrollFinal()
     }
@@ -211,13 +215,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun generateSummary(data: String) {
+        //Check if use descriptors is enabled
+        if (settings == null)
+            return
+        if(!settings!!.isUseDescriptions)
+            return
+
         var summary: TextView
 
+        //Summary text view is added (recycle it)
         if (binding.layoutTopBarComponents.size == 2) {
-            summary = binding.layoutTopBarComponents.get(1) as TextView
+            summary = binding.layoutTopBarComponents[1] as TextView
             summary.text = ""
         }
-        else {
+        else { //Create new summary text view
             summary = TextView(context).apply {
                 layoutParams = LayoutParams(
                     LayoutParams.WRAP_CONTENT,
@@ -229,6 +240,7 @@ class MainActivity : AppCompatActivity() {
             binding.layoutTopBarComponents.addView(summary)
         }
 
+        //Make fetch to get summary text
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 //Get llama api url
@@ -250,6 +262,7 @@ class MainActivity : AppCompatActivity() {
                     ) { e ->
                         lifecycleScope.launch {
                             withContext(Dispatchers.Main) {
+                                //Update view. Make summary text visible and append text
                                 summary.visibility = VISIBLE
                                 if(summary.text.length > 20 && summary.text[summary.text.length - 1] != '.')
                                     summary.append("...")
@@ -259,7 +272,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 } catch (ignore: LlamaConnectionException) {
-
+                    //Connection error (no need to handle)
                 }
             }
         }
@@ -318,9 +331,7 @@ class MainActivity : AppCompatActivity() {
                         Log.d("Error", e.message + " " + e.stackTraceToString())
 
                         //Remove message
-                        val hotCardView = (messageView.getView() as ViewGroup)
-                        (hotCardView.parent as ViewGroup).removeView(hotCardView)
-                        hotCardView.removeView(messageView.getView())
+                        binding.messageLayout.removeView(messageView.getView())
                     }
                 }
                 return@withContext llamaResponse

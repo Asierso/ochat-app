@@ -14,6 +14,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.asierso.ochat.api.LlamaConnection
+import com.asierso.ochat.databinding.ActivitySettingsBinding
 import com.asierso.ochat.models.ClientSettings
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.Dispatchers
@@ -24,54 +25,57 @@ import kotlinx.coroutines.withContext
 class SettingsActivity : AppCompatActivity() {
     private lateinit var context: Context
     private var settings: ClientSettings? = null
+    private lateinit var binding: ActivitySettingsBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_settings)
+        binding = ActivitySettingsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         context = this
 
         //Allow all downloads
         val policy = ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
 
-        findViewById<ImageView>(R.id.btn_back).setOnClickListener {
+        binding.btnBack.setOnClickListener {
             finish()
         }
 
-        findViewById<Button>(R.id.btn_save).setOnClickListener {
+        binding.btnSave.setOnClickListener {
             saveConfig()
         }
 
-        findViewById<Button>(R.id.btn_delete_all).setOnClickListener {
+        binding.btnDeleteAll.setOnClickListener {
             FilesManager.removeAllChats(context)
         }
 
         loadConfig()
 
-        findViewById<TextInputEditText>(R.id.lbl_llamaip).setOnFocusChangeListener { _, _ ->
+        binding.lblLlamaip.setOnFocusChangeListener { _, _ ->
             tryGetModels()
         }
 
-        findViewById<TextInputEditText>(R.id.lbl_llamaport).setOnFocusChangeListener { _, _ ->
+        binding.lblLlamaport.setOnFocusChangeListener { _, _ ->
             tryGetModels()
         }
     }
 
     private fun tryGetModels() {
         //Get IP and port from view
-        val ip = findViewById<TextInputEditText>(R.id.lbl_llamaip).text.toString()
-        val port = findViewById<TextInputEditText>(R.id.lbl_llamaport).text.toString().trim()
+        val ip = binding.lblLlamaip.text.toString()
+        val port = binding.lblLlamaport.text.toString().trim()
 
         //Try to fetch models if data is valid
         if (ip.isNotBlank() && port.isNotBlank()) {
             if (settings == null)
                 settings = ClientSettings()
 
-            //Update settings with view data
+            //Update basic settings with view data
             settings!!.ip = ip
             settings!!.port = port.toInt()
-            settings!!.isSsl = findViewById<RadioButton>(R.id.radio_https).isChecked
+            settings!!.isSsl = binding.radioHttps.isChecked
             fetchModels(settings!!)
         }
     }
@@ -90,11 +94,11 @@ class SettingsActivity : AppCompatActivity() {
                         val adapter =
                             ArrayAdapter(context, android.R.layout.simple_spinner_item, models!!)
                         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                        findViewById<Spinner>(R.id.spinner_llamamodel).adapter = adapter
+                        binding.spinnerLlamamodel.adapter = adapter
 
                         //Load last selected model and update view
                         if (adapter.getPosition(settings.model) >= 0)
-                            findViewById<Spinner>(R.id.spinner_llamamodel).setSelection(
+                            binding.spinnerLlamamodel.setSelection(
                                 adapter.getPosition(
                                     settings.model
                                 )
@@ -114,17 +118,21 @@ class SettingsActivity : AppCompatActivity() {
         fetchModels(settings!!)
 
         //Connection IP port
-        findViewById<TextInputEditText>(R.id.lbl_llamaip).setText(settings!!.ip)
-        findViewById<TextInputEditText>(R.id.lbl_llamaport).setText(settings!!.port.toString())
+        binding.lblLlamaip.setText(settings!!.ip)
+        binding.lblLlamaport.setText(settings!!.port.toString())
 
         //Protocol
-        findViewById<RadioButton>(R.id.radio_https).isChecked = (settings!!.isSsl)
-        findViewById<RadioButton>(R.id.radio_http).isChecked = (!settings!!.isSsl)
+        binding.radioHttps.isChecked = (settings!!.isSsl)
+        binding.radioHttp.isChecked = (!settings!!.isSsl)
+
+        //Use descriptions
+        binding.switchUseDescriptions.isChecked = settings!!.isUseDescriptions
+
     }
 
     private fun saveConfig() {
         //Validate data
-        if ((findViewById<TextInputEditText>(R.id.lbl_llamaport).text.toString()).toInt() !in 0..65535) {
+        if ((binding.lblLlamaport.text.toString()).toInt() !in 0..65535) {
             Toast.makeText(context, "Error, port should be between 0 and 65535", Toast.LENGTH_SHORT)
                 .show()
             return
@@ -132,11 +140,11 @@ class SettingsActivity : AppCompatActivity() {
 
         //Save settings
         val settings = ClientSettings().apply {
-            ip = findViewById<TextInputEditText>(R.id.lbl_llamaip).text.toString().trim()
-            port =
-                (findViewById<TextInputEditText>(R.id.lbl_llamaport).text.toString().trim()).toInt()
-            model = findViewById<Spinner>(R.id.spinner_llamamodel).selectedItem?.toString()
-            isSsl = findViewById<RadioButton>(R.id.radio_https).isChecked
+            ip = binding.lblLlamaip.text.toString().trim()
+            port = binding.lblLlamaport.text.toString().trim().toInt()
+            model = binding.spinnerLlamamodel.selectedItem?.toString()
+            isSsl = binding.radioHttps.isChecked
+            isUseDescriptions = binding.switchUseDescriptions.isChecked
         }
 
         FilesManager.saveSettings(context, settings)

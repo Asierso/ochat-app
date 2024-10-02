@@ -7,6 +7,15 @@ public class ClientSettings {
     private int port;
     private String model;
     private boolean ssl;
+    private boolean useDescriptions;
+
+    public boolean isUseDescriptions() {
+        return useDescriptions;
+    }
+
+    public void setUseDescriptions(boolean useDescriptions) {
+        this.useDescriptions = useDescriptions;
+    }
 
     public String getIp() {
         return ip;

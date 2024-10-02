@@ -2,6 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#D7D7D7</color>
+    <color name="txt_secondary">#949494</color>
 
     <color name="ia_wrote">#545468</color>
     <color name="ia_wrote_fore">#F0F0F0</color>
