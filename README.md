@@ -1,4 +1,4 @@
-![ochat logo](ochat.png)
+<img src="ochat.png" width="48px">
 # OCHAT - Ollama Chat
 Ochat is a chat Android app client for Ollama AI. Ochat supports chats with different Ollama models
 
