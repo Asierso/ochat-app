@@ -1,3 +1,4 @@
+![ochat logo](ochat.png)
 # OCHAT - Ollama Chat
 Ochat is a chat Android app client for Ollama AI. Ochat supports chats with different Ollama models
 
