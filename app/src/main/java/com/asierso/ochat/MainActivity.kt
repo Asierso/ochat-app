@@ -3,17 +3,25 @@ package com.asierso.ochat
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
+import android.widget.LinearLayout.GONE
+import android.widget.LinearLayout.LayoutParams
+import android.widget.LinearLayout.VISIBLE
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.get
+import androidx.core.view.size
 import androidx.lifecycle.lifecycleScope
 import com.asierso.ochat.api.*
 import com.asierso.ochat.api.builder.LlamaDialogsBuilder
+import com.asierso.ochat.api.builder.LlamaPromptsBuilder
 import com.asierso.ochat.api.builder.LlamaRequestBaseBuilder
 import com.asierso.ochat.api.handlers.LlamaConnectionException
 import com.asierso.ochat.api.models.LlamaMessage
@@ -35,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var context: Context
     private lateinit var binding: ActivityMainBinding
     private lateinit var messageEdit: MessageEdit
+    private var flagNeedSummary = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +56,7 @@ class MainActivity : AppCompatActivity() {
 
         //Crete messages bar
         messageEdit = MessageEdit(context)
-        binding.layoutMessagesBarComponents.addView(messageEdit.getMessageEditCard(),0)
+        binding.layoutMessagesBarComponents.addView(messageEdit.getMessageEditCard(), 0)
 
         //Init messages stack
         conversation = arrayListOf()
@@ -58,8 +67,19 @@ class MainActivity : AppCompatActivity() {
                 //Lock send button
                 isSendEnabled(false)
 
+                //Generate summary if is first conversation
+                if (conversation.size == 0 && messageEdit.getText().length > 10)
+                    generateSummary(messageEdit.getText())
+                else if (conversation.size == 0)
+                    flagNeedSummary = true
+
                 //Send message and update view
-                conversation.add(LlamaMessage(LlamaMessage.USER_ROLE, messageEdit.getText().toString()))
+                conversation.add(
+                    LlamaMessage(
+                        LlamaMessage.USER_ROLE,
+                        messageEdit.getText()
+                    )
+                )
 
                 //Create message balloon only if user wrote some text
                 if (messageEdit.getText().isNotBlank()) {
@@ -112,6 +132,10 @@ class MainActivity : AppCompatActivity() {
                     //Check if loaded conversation is valid
                     if (loadedConversation != null) {
                         conversation.addAll(loadedConversation)
+                        //Generate summary for the first message
+
+                        generateSummary(conversation[0].content.toString())
+
                         for (balloonMessage in conversation)
                             withContext(Dispatchers.Main) {
                                 //Create all message balloons
@@ -124,7 +148,7 @@ class MainActivity : AppCompatActivity() {
                                 msgview.stopLoading()
                             }
                         //Make autoscroll in another coroutine when load ends
-                        withContext(Dispatchers.Main){
+                        withContext(Dispatchers.Main) {
                             scrollFinal()
                         }
                     }
@@ -143,7 +167,7 @@ class MainActivity : AppCompatActivity() {
         if (settings == null)
             return
 
-        //Detects changes in settings and clear chats if is it or clear chat if is removed
+        //Detects critical changes in settings and clear chats if is it or clear chat if is removed
         if (settings.hashCode() != prevTmp.hashCode() || !FilesManager.chatExists(
                 this,
                 "${settings!!.ip}_${settings!!.model}"
@@ -151,6 +175,9 @@ class MainActivity : AppCompatActivity() {
         ) {
             binding.messageLayout.removeAllViews()
             conversation.clear()
+
+            if (binding.layoutTopBarComponents.size == 2)
+                binding.layoutTopBarComponents.get(1).visibility = GONE
 
             //Try to charge if there is another saved conversation
             if (settings?.model != null && settings?.ip != null)
@@ -180,6 +207,61 @@ class MainActivity : AppCompatActivity() {
                 )
             )
             sendBtn.animation = null
+        }
+    }
+
+    private fun generateSummary(data: String) {
+        var summary: TextView
+
+        if (binding.layoutTopBarComponents.size == 2) {
+            summary = binding.layoutTopBarComponents.get(1) as TextView
+            summary.text = ""
+        }
+        else {
+            summary = TextView(context).apply {
+                layoutParams = LayoutParams(
+                    LayoutParams.WRAP_CONTENT,
+                    LayoutParams.WRAP_CONTENT
+                )
+                visibility = GONE
+                textSize = Global.getPixels(context, 4).toFloat()
+            }
+            binding.layoutTopBarComponents.addView(summary)
+        }
+
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                //Get llama api url
+                val llama = LlamaConnection(Global.bakeUrl(settings) ?: "")
+
+                //Build llama connection
+                val llamaRequestBase = LlamaRequestBaseBuilder()
+                    .useModel(settings?.model.toString())
+                    .withStream(true)
+                    .build()
+
+                //Build summary ask
+                var promptBuilder = LlamaPromptsBuilder(llamaRequestBase)
+                    .appendPrompt("summary in three words in the same language '${data}'")
+
+                try {
+                    llama.fetchRealtime(
+                        promptBuilder.build()
+                    ) { e ->
+                        lifecycleScope.launch {
+                            withContext(Dispatchers.Main) {
+                                summary.visibility = VISIBLE
+                                if(summary.text.length > 20 && summary.text[summary.text.length - 1] != '.')
+                                    summary.append("...")
+                                else if(summary.text.length < 20)
+                                    summary.append(e.response.trim('"', '\n', '\r'))
+                            }
+                        }
+                    }
+                } catch (ignore: LlamaConnectionException) {
+
+                }
+            }
         }
     }
 
@@ -233,6 +315,7 @@ class MainActivity : AppCompatActivity() {
                     llamaResponse = null
                     withContext(Dispatchers.Main) {
                         Toast.makeText(context, "Error ${e.message}", Toast.LENGTH_SHORT).show()
+                        Log.d("Error", e.message + " " + e.stackTraceToString())
 
                         //Remove message
                         val hotCardView = (messageView.getView() as ViewGroup)
@@ -245,6 +328,11 @@ class MainActivity : AppCompatActivity() {
             if (res != null) {
                 //Add full text after stream load
                 conversation.add(LlamaMessage(LlamaMessage.ASSISTANT_ROLE, res.message.content))
+
+                if (flagNeedSummary) {
+                    generateSummary(conversation[conversation.size - 1].content.toString())
+                    flagNeedSummary = false
+                }
 
                 //Save conversation
                 lifecycleScope.launch {
