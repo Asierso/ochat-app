@@ -119,6 +119,15 @@
                 android:layout_height="match_parent"
                 android:layout_weight="2"
                 android:id="@+id/spinner_llamamodel"/>
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/baseline_refresh_24"
+                android:layout_gravity="center_vertical"
+                app:tint="@color/white"
+                android:id="@+id/btn_models_refresh"
+                android:layout_marginEnd="10dp"/>
         </TableRow>
 
         <!-- Protocol -->

@@ -4,11 +4,8 @@ import android.content.Context
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
+import android.view.animation.AnimationUtils
 import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.RadioButton
-import android.widget.Spinner
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -16,7 +13,6 @@ import androidx.lifecycle.lifecycleScope
 import com.asierso.ochat.api.LlamaConnection
 import com.asierso.ochat.databinding.ActivitySettingsBinding
 import com.asierso.ochat.models.ClientSettings
-import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -51,13 +47,19 @@ class SettingsActivity : AppCompatActivity() {
             FilesManager.removeAllChats(context)
         }
 
-        loadConfig()
-
-        binding.lblLlamaip.setOnFocusChangeListener { _, _ ->
-            tryGetModels()
+        binding.lblLlamaport.setOnKeyListener { view, i, keyEvent ->
+            if(binding.lblLlamaport.text.toString().isNotBlank() && binding.lblLlamaport.text.toString().toInt() in 0..65535){
+                binding.lblLlamaport.error = null
+            }else{
+                binding.lblLlamaport.error = "Port should be between 0 and 65535"
+            }
+            return@setOnKeyListener false
         }
 
-        binding.lblLlamaport.setOnFocusChangeListener { _, _ ->
+        loadConfig()
+
+        binding.btnModelsRefresh.setOnClickListener{
+            binding.btnModelsRefresh.startAnimation(AnimationUtils.loadAnimation(context, R.anim.load_single_rotation_lineal))
             tryGetModels()
         }
     }
@@ -74,7 +76,7 @@ class SettingsActivity : AppCompatActivity() {
 
             //Update basic settings with view data
             settings!!.ip = ip
-            settings!!.port = port.toInt()
+            settings!!.port = if(port.isBlank()) 0 else port.toInt()
             settings!!.isSsl = binding.radioHttps.isChecked
             fetchModels(settings!!)
         }
@@ -105,6 +107,9 @@ class SettingsActivity : AppCompatActivity() {
                             )
                     }
                 } catch (ignore: Exception) {
+                    withContext(Dispatchers.Main) {
+                        binding.spinnerLlamamodel.adapter = null
+                    }
                 }
             }
 
@@ -132,7 +137,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun saveConfig() {
         //Validate data
-        if ((binding.lblLlamaport.text.toString()).toInt() !in 0..65535) {
+        if (binding.lblLlamaport.text.toString().isNotBlank() && binding.lblLlamaport.text.toString().toInt() !in 0..65535) {
             Toast.makeText(context, "Error, port should be between 0 and 65535", Toast.LENGTH_SHORT)
                 .show()
             return
@@ -141,7 +146,7 @@ class SettingsActivity : AppCompatActivity() {
         //Save settings
         val settings = ClientSettings().apply {
             ip = binding.lblLlamaip.text.toString().trim()
-            port = binding.lblLlamaport.text.toString().trim().toInt()
+            port = if(binding.lblLlamaport.text.toString().trim().isBlank()) 0 else binding.lblLlamaport.text.toString().trim().toInt()
             model = binding.spinnerLlamamodel.selectedItem?.toString()
             isSsl = binding.radioHttps.isChecked
             isUseDescriptions = binding.switchUseDescriptions.isChecked
