@@ -22,7 +22,7 @@ To deploy Ollama to use with ochat, is better to use Docker containers. You can 
 If you want to run ochat-app without having Ollama deployed by yourself, you can do it using Termux in your mobile phone downloading any linux distro
 
 >[!WARNING] 
->Models performance maybe injuried using Termux
+>Models performance maybe decrease using Termux instead of containers
 
 - Download Termux app on your mobile phone [here](https://github.com/termux/termux-app)
 - Open the app and run the following command: `pkg update ; pkg install wget -y ; wget https://raw.githubusercontent.com/wahasa/Debian/main/Install/debian12.sh ; chmod +x debian12.sh ; ./debian12.sh`. You will need to grand storage permissions to Termux
