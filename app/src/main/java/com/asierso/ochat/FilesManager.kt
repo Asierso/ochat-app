@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.asierso.ochat.api.models.LlamaMessage
 import com.asierso.ochat.models.ClientSettings
+import com.asierso.ochat.models.Conversation
 import com.google.gson.Gson
 import java.io.BufferedReader
 import java.io.BufferedWriter
@@ -32,7 +33,7 @@ class FilesManager {
             return clientSettings
         }
 
-        fun saveConversation(context: Context, chatName: String, messages: Array<LlamaMessage>){
+        fun saveConversation(context: Context, chatName: String, messages: Conversation){
             //Create chats dir if not exists
             if(!File("${context.filesDir}/chats").exists())
                 File("${context.filesDir}/chats").mkdir()
@@ -44,15 +45,15 @@ class FilesManager {
             }
         }
 
-        fun loadConversation(context: Context, chatName : String ) : Array<LlamaMessage>?{
+        fun loadConversation(context: Context, chatName : String ) : Conversation?{
             //Detects if previous config file exists
             if(!File("${context.filesDir}/chats/chat_${chatName.replace("-","_").hashCode()}.json").exists())
                 return null
 
             //Loads config
-            var messages: Array<LlamaMessage>
+            var messages: Conversation
             BufferedReader(FileReader("${context.filesDir}/chats/chat_${chatName.replace("-","_").hashCode()}.json")).use{
-                messages = Gson().fromJson(it.readText(),Array<LlamaMessage>::class.java)
+                messages = Gson().fromJson(it.readText(),Conversation::class.java)
             }
             return messages
         }

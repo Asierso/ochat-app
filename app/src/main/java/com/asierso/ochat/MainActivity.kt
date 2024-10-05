@@ -30,6 +30,7 @@ import com.asierso.ochat.components.MessageCardView
 import com.asierso.ochat.components.MessageEdit
 import com.asierso.ochat.databinding.ActivityMainBinding
 import com.asierso.ochat.models.ClientSettings
+import com.asierso.ochat.models.Conversation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,7 +38,8 @@ import kotlinx.coroutines.withContext
 class MainActivity : AppCompatActivity() {
     enum class Side { User, IA }
 
-    private lateinit var conversation: ArrayList<LlamaMessage>
+    //private lateinit var conversation: ArrayList<LlamaMessage>
+    private lateinit var conversation: Conversation
 
     private var settings: ClientSettings? = null
     private lateinit var context: Context
@@ -59,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         binding.layoutMessagesBarComponents.addView(messageEdit.getMessageEditCard(), 0)
 
         //Init messages stack
-        conversation = arrayListOf()
+        conversation = Conversation()
 
         //Button logic
         binding.btnSend.setOnClickListener {
@@ -68,13 +70,13 @@ class MainActivity : AppCompatActivity() {
                 isSendEnabled(false)
 
                 //Generate summary if is first conversation
-                if (conversation.size == 0 && messageEdit.getText().length > 10)
+                if (conversation.chat.size == 0 && messageEdit.getText().length > 10 && conversation.description.isBlank())
                     generateSummary(messageEdit.getText())
-                else if (conversation.size == 0)
+                else if (conversation.chat.size == 0 && conversation.description.isBlank())
                     flagNeedSummary = true
 
                 //Send message and update view
-                conversation.add(
+                conversation.chat.add(
                     LlamaMessage(
                         LlamaMessage.USER_ROLE,
                         messageEdit.getText()
@@ -131,12 +133,13 @@ class MainActivity : AppCompatActivity() {
 
                     //Check if loaded conversation is valid
                     if (loadedConversation != null) {
-                        conversation.addAll(loadedConversation)
+                        conversation.chat = loadedConversation.chat
+                        conversation.description = loadedConversation.description
                         //Generate summary for the first message
 
-                        generateSummary(conversation[0].content.toString())
+                        generateSummary(conversation.chat[0].content.toString())
 
-                        for (balloonMessage in conversation)
+                        for (balloonMessage in conversation.chat)
                             withContext(Dispatchers.Main) {
                                 //Create all message balloons
                                 val msgview = MessageCardView(
@@ -174,7 +177,7 @@ class MainActivity : AppCompatActivity() {
             )
         ) {
             binding.messageLayout.removeAllViews()
-            conversation.clear()
+            conversation = Conversation()
 
             if (binding.layoutTopBarComponents.size == 2)
                 binding.layoutTopBarComponents.get(1).visibility = GONE
@@ -185,8 +188,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         //Enable or disable descriptions
-        if(binding.layoutTopBarComponents.size == 2)
-            binding.layoutTopBarComponents[1].visibility = if(settings!!.isUseDescriptions) VISIBLE else GONE
+        if (binding.layoutTopBarComponents.size == 2)
+            binding.layoutTopBarComponents[1].visibility =
+                if (settings!!.isUseDescriptions) VISIBLE else GONE
 
         //Make autoscroll
         scrollFinal()
@@ -218,7 +222,7 @@ class MainActivity : AppCompatActivity() {
         //Check if use descriptors is enabled
         if (settings == null)
             return
-        if(!settings!!.isUseDescriptions)
+        if (!settings!!.isUseDescriptions)
             return
 
         var summary: TextView
@@ -227,8 +231,7 @@ class MainActivity : AppCompatActivity() {
         if (binding.layoutTopBarComponents.size == 2) {
             summary = binding.layoutTopBarComponents[1] as TextView
             summary.text = ""
-        }
-        else { //Create new summary text view
+        } else { //Create new summary text view
             summary = TextView(context).apply {
                 layoutParams = LayoutParams(
                     LayoutParams.WRAP_CONTENT,
@@ -238,6 +241,13 @@ class MainActivity : AppCompatActivity() {
                 textSize = Global.getPixels(context, 4).toFloat()
             }
             binding.layoutTopBarComponents.addView(summary)
+        }
+
+        //Load description if summary was generated in this chat before
+        if (conversation.description.isNotBlank()) {
+            summary.text = conversation.description
+            summary.visibility = VISIBLE
+            return
         }
 
         //Make fetch to get summary text
@@ -264,12 +274,20 @@ class MainActivity : AppCompatActivity() {
                             withContext(Dispatchers.Main) {
                                 //Update view. Make summary text visible and append text
                                 summary.visibility = VISIBLE
-                                if(summary.text.length > 20 && summary.text[summary.text.length - 1] != '.')
+                                if (summary.text.length > 20 && summary.text[summary.text.length - 1] != '.')
                                     summary.append("...")
-                                else if(summary.text.length < 20)
+                                else if (summary.text.length < 20)
                                     summary.append(e.response.trim('"', '\n', '\r'))
+
+                                //Set description
+                                conversation.description = summary.text.toString()
                             }
                         }
+                    }
+
+                    //Saved generated description
+                    withContext(Dispatchers.IO){
+                        saveConversation()
                     }
                 } catch (ignore: LlamaConnectionException) {
                     //Connection error (no need to handle)
@@ -305,7 +323,7 @@ class MainActivity : AppCompatActivity() {
 
                 //Build dialogs
                 val dialogBuilder = LlamaDialogsBuilder(llamaRequestBase)
-                for (handle in conversation)
+                for (handle in conversation.chat)
                     dialogBuilder.createDialog(handle.role, handle.content)
 
                 var llamaResponse: LlamaResponse?
@@ -338,21 +356,22 @@ class MainActivity : AppCompatActivity() {
             }
             if (res != null) {
                 //Add full text after stream load
-                conversation.add(LlamaMessage(LlamaMessage.ASSISTANT_ROLE, res.message.content))
+                conversation.chat.add(
+                    LlamaMessage(
+                        LlamaMessage.ASSISTANT_ROLE,
+                        res.message.content
+                    )
+                )
 
                 if (flagNeedSummary) {
-                    generateSummary(conversation[conversation.size - 1].content.toString())
+                    generateSummary(conversation.chat[conversation.chat.size - 1].content.toString())
                     flagNeedSummary = false
                 }
 
                 //Save conversation
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
-                        FilesManager.saveConversation(
-                            context,
-                            "${settings!!.ip}_${settings!!.model}",
-                            conversation.toTypedArray()
-                        )
+                        saveConversation()
                     }
                 }
             }
@@ -360,5 +379,13 @@ class MainActivity : AppCompatActivity() {
             //Allow user to send new messages
             isSendEnabled(true)
         }
+    }
+
+    private fun saveConversation() {
+        FilesManager.saveConversation(
+            context,
+            "${settings!!.ip}_${settings!!.model}",
+            conversation
+        )
     }
 }
