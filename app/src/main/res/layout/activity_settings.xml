@@ -190,6 +190,28 @@
             android:id="@+id/switch_use_descriptions" />
         </TableRow>
 
+        <!--Use descriptions -->
+        <TableRow
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:paddingTop="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10pt"
+                android:layout_gravity="start|center"
+                android:text="Optimize models"
+                android:padding="10dp"/>
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:layout_marginEnd="10dp"
+                android:id="@+id/switch_optimize_models" />
+        </TableRow>
+
         <!-- Save clear-->
         <TableRow
             android:layout_height="wrap_content"

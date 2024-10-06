@@ -1,6 +1,7 @@
 package com.asierso.ochat
 
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
@@ -13,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import com.asierso.ochat.api.LlamaConnection
 import com.asierso.ochat.databinding.ActivitySettingsBinding
 import com.asierso.ochat.models.ClientSettings
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -61,6 +63,19 @@ class SettingsActivity : AppCompatActivity() {
         binding.btnModelsRefresh.setOnClickListener{
             binding.btnModelsRefresh.startAnimation(AnimationUtils.loadAnimation(context, R.anim.load_single_rotation_lineal))
             tryGetModels()
+        }
+
+        binding.switchOptimizeModels.setOnCheckedChangeListener { compoundButton, b ->
+            if(b==true)
+            MaterialAlertDialogBuilder(context)
+                .setTitle("Warning")
+                .setMessage("Optimization improve models reducing the chat context. This could generate lack of previous context but more accurated answers. Do you want to continue?")
+                .setNegativeButton("No") { dialogInterface, i ->
+                    binding.switchOptimizeModels.isChecked = false
+                }
+                .setPositiveButton("Yes") { dialogInterface, i ->
+                    binding.switchOptimizeModels.isChecked = true
+                }.show()
         }
     }
 
@@ -133,6 +148,9 @@ class SettingsActivity : AppCompatActivity() {
         //Use descriptions
         binding.switchUseDescriptions.isChecked = settings!!.isUseDescriptions
 
+        //Optimize models
+        binding.switchOptimizeModels.isChecked = settings!!.isOptimizeModels
+
     }
 
     private fun saveConfig() {
@@ -150,6 +168,7 @@ class SettingsActivity : AppCompatActivity() {
             model = binding.spinnerLlamamodel.selectedItem?.toString()
             isSsl = binding.radioHttps.isChecked
             isUseDescriptions = binding.switchUseDescriptions.isChecked
+            isOptimizeModels = binding.switchOptimizeModels.isChecked
         }
 
         FilesManager.saveSettings(context, settings)

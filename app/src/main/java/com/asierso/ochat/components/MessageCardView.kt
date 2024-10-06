@@ -22,6 +22,7 @@ class MessageCardView(private val context: Context, private val side: Side) {
     private var cardContainer : LinearLayout? = null
     private var card: CardView? = null
     private var text: TextView? = null
+    private var regenerate: ImageView? = null
     private var isLoading = true
     private var dots = 0
 
@@ -44,7 +45,7 @@ class MessageCardView(private val context: Context, private val side: Side) {
             strokeWidth = 0
 
             //Set card resolution
-            minimumHeight = Global.getPixels(context, 70)
+            minimumHeight = Global.getPixels(context, 40)
             setContentPadding(
                 Global.getPixels(context, 10),
                 Global.getPixels(context, 10),
@@ -60,6 +61,7 @@ class MessageCardView(private val context: Context, private val side: Side) {
                         R.drawable.user_message_balloon
                     )
                 )
+                animation = AnimationUtils.loadAnimation(context, R.anim.right_slide_in)
                 setCardBackgroundColor(context.getColor(R.color.user_wrote))
             }
             else {
@@ -69,6 +71,7 @@ class MessageCardView(private val context: Context, private val side: Side) {
                         R.drawable.ia_message_balloon
                     )
                 )
+                animation = AnimationUtils.loadAnimation(context, R.anim.left_slide_in)
                 setCardBackgroundColor(context.getColor(R.color.ia_wrote))
             }
             //Adjust layout
@@ -96,7 +99,7 @@ class MessageCardView(private val context: Context, private val side: Side) {
         //Add dots container
         loadAnimation = LinearLayout(context).apply {
             layoutParams = LinearLayout.LayoutParams(
-                150,150
+                150,50
             )
             orientation = LinearLayout.HORIZONTAL
         }
@@ -121,6 +124,20 @@ class MessageCardView(private val context: Context, private val side: Side) {
             loadAnimation!!.addView(createAnimationDot())
         }
 
+        regenerate = ImageView(context).apply {
+            setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.baseline_refresh_24))
+            drawable.setTint(context.getColor(R.color.white))
+            layoutParams = LinearLayout.LayoutParams(
+                Global.getPixels(context,20),
+                Global.getPixels(context,20)
+
+            ).apply {
+                setMargins(10,0,0,10)
+                gravity = Gravity.BOTTOM
+            }
+
+        }
+
         //Add text and animation to card
         cardContainer!!.addView(card)
         card!!.addView(loadAnimation)
@@ -128,10 +145,22 @@ class MessageCardView(private val context: Context, private val side: Side) {
         text!!.doOnTextChanged { _,_,_, count -> if(count > 0) card!!.removeView(loadAnimation) }
     }
 
+    fun setRegenerate(status: Boolean){
+        if(status && side == Side.IA){
+            cardContainer!!.addView(regenerate)
+        }else if(side == Side.IA){
+            cardContainer!!.removeView(regenerate)
+        }
+    }
+
+    fun getRegenerateButton() : ImageView{
+        return regenerate!!
+    }
+
     private fun createAnimationDot() : ImageView{
         //Create dot margins
         val dotParams = LinearLayout.LayoutParams(
-            15,15
+            17,17
         )
         dotParams.setMargins(5,5,5,5)
         dots++

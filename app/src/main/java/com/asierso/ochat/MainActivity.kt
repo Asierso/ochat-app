@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
@@ -45,6 +44,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var context: Context
     private lateinit var binding: ActivityMainBinding
     private lateinit var messageEdit: MessageEdit
+    private var lastIAMessage : MessageCardView? = null
     private var flagNeedSummary = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,10 +85,10 @@ class MainActivity : AppCompatActivity() {
 
                 //Create message balloon only if user wrote some text
                 if (messageEdit.getText().isNotBlank()) {
-                    val msgview = MessageCardView(context, Side.User)
-                    msgview.getTextComponent().append(messageEdit.getText())
-                    msgview.stopLoading()
-                    findViewById<LinearLayout>(R.id.message_layout).addView(msgview.getView())
+                    val messageView = MessageCardView(context, Side.User)
+                    messageView.getTextComponent().append(messageEdit.getText())
+                    messageView.stopLoading()
+                    findViewById<LinearLayout>(R.id.message_layout).addView(messageView.getView())
                 }
 
                 //Close virtual keyboard
@@ -135,28 +135,52 @@ class MainActivity : AppCompatActivity() {
                     if (loadedConversation != null) {
                         conversation.chat = loadedConversation.chat
                         conversation.description = loadedConversation.description
-                        //Generate summary for the first message
 
+                        //Generate summary for the first message
                         generateSummary(conversation.chat[0].content.toString())
 
+                        var i = 0
                         for (balloonMessage in conversation.chat)
                             withContext(Dispatchers.Main) {
                                 //Create all message balloons
-                                val msgview = MessageCardView(
+                                val messageView = MessageCardView(
                                     context,
                                     if (balloonMessage.role.equals("user")) Side.User else Side.IA
                                 )
-                                msgview.getTextComponent().text = balloonMessage.content.toString()
-                                findViewById<LinearLayout>(R.id.message_layout).addView(msgview.getView())
-                                msgview.stopLoading()
+                                messageView.getTextComponent().text = balloonMessage.content.toString()
+                                findViewById<LinearLayout>(R.id.message_layout).addView(messageView.getView())
+                                messageView.stopLoading()
+
+                                //Load regeneration
+                                if(i==conversation.chat.size -1) {
+                                    messageView.setRegenerate(true)
+                                    messageView.getRegenerateButton().setOnClickListener {
+                                        onRegenerate(messageView)
+                                    }
+                                    lastIAMessage = messageView
+                                }
+                                i++
                             }
                         //Make autoscroll in another coroutine when load ends
                         withContext(Dispatchers.Main) {
                             scrollFinal()
                         }
+                    }else{
+                        //Hide description gap if there's no chat
+                        withContext(Dispatchers.Main) {
+                            if (binding.layoutTopBarComponents.size == 2)
+                                binding.layoutTopBarComponents[1].visibility = GONE
+                        }
                     }
                 }
             }
+    }
+
+    private fun onRegenerate(message: MessageCardView){
+        binding.messageLayout.removeView(message.getView())
+        conversation.chat.removeAt(conversation.chat.size - 1)
+        sendPrompt()
+        scrollFinal()
     }
 
     override fun onResume() {
@@ -179,7 +203,7 @@ class MainActivity : AppCompatActivity() {
             binding.messageLayout.removeAllViews()
             conversation = Conversation()
 
-            if (binding.layoutTopBarComponents.size == 2)
+            if (binding.layoutTopBarComponents.size >= 2)
                 binding.layoutTopBarComponents.get(1).visibility = GONE
 
             //Try to charge if there is another saved conversation
@@ -297,9 +321,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendPrompt() {
+        //Disable message regeneration of last message
+        lastIAMessage?.setRegenerate(false)
+
         //Create message balloon
         val messageView = MessageCardView(context, Side.IA)
         binding.messageLayout.addView(messageView.getView())
+
+        //Save message reference to clear regeneration next time
+        lastIAMessage = messageView
 
         //Make autoscroll
         scrollFinal()
@@ -323,7 +353,7 @@ class MainActivity : AppCompatActivity() {
 
                 //Build dialogs
                 val dialogBuilder = LlamaDialogsBuilder(llamaRequestBase)
-                for (handle in conversation.chat)
+                for (handle in if(settings!!.isOptimizeModels) ChatOptimizer(conversation).getOptimizedChat() else conversation.chat)
                     dialogBuilder.createDialog(handle.role, handle.content)
 
                 var llamaResponse: LlamaResponse?
@@ -368,6 +398,8 @@ class MainActivity : AppCompatActivity() {
                     flagNeedSummary = false
                 }
 
+
+
                 //Save conversation
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
@@ -378,6 +410,10 @@ class MainActivity : AppCompatActivity() {
 
             //Allow user to send new messages
             isSendEnabled(true)
+            messageView.setRegenerate(true)
+            messageView.getRegenerateButton().setOnClickListener {
+                onRegenerate(messageView)
+            }
         }
     }
 

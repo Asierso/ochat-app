@@ -4,10 +4,11 @@ import java.util.Objects;
 
 public class ClientSettings {
     private String ip;
-    private int port;
+    private int port = 11434;
     private String model;
     private boolean ssl;
-    private boolean useDescriptions;
+    private boolean useDescriptions = true;
+    private boolean optimizeModels = false;
 
     public boolean isUseDescriptions() {
         return useDescriptions;
@@ -47,6 +48,14 @@ public class ClientSettings {
 
     public void setSsl(boolean ssl) {
         this.ssl = ssl;
+    }
+
+    public boolean isOptimizeModels() {
+        return optimizeModels;
+    }
+
+    public void setOptimizeModels(boolean optimizeModels) {
+        this.optimizeModels = optimizeModels;
     }
 
     @Override

@@ -1,10 +1,12 @@
 package com.asierso.ochat.models;
 
+import androidx.annotation.NonNull;
+
 import com.asierso.ochat.api.models.LlamaMessage;
 
 import java.util.ArrayList;
 
-public class Conversation {
+public class Conversation implements Cloneable {
     private String description;
     private ArrayList<LlamaMessage> chat;
 
@@ -32,5 +34,11 @@ public class Conversation {
 
     public ArrayList<LlamaMessage> getChat() {
         return chat;
+    }
+
+    @NonNull
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }
