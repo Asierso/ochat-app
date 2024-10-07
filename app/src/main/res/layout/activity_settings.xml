@@ -43,8 +43,9 @@
         <!--General settings-->
         <TextView
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="-- General --"
+            android:text="General"
             android:textColor="@color/txt_secondary"
             android:padding="5dp"/>
 
@@ -165,7 +166,7 @@
         <TextView
             android:layout_width="match_parent"
             android:gravity="center"
-            android:text="-- Extra Functions --"
+            android:text="Extra Functions"
             android:textColor="@color/txt_secondary"/>
 
         <!--Use descriptions -->
