@@ -21,9 +21,14 @@ class FilesManager {
             }
         }
         fun loadSettings(context: Context) : ClientSettings?{
-            //Detects if previous config file exists
-            if(!File("${context.filesDir}con_settings.json").exists())
-                return null
+            //Detects if previous config file exists and if not, create new one with default settings
+            if(!File("${context.filesDir}con_settings.json").exists()){
+                val defaultSettings = ClientSettings().apply {
+                    isUseDescriptions = true
+                }
+                saveSettings(context,defaultSettings)
+                return defaultSettings
+            }
 
             //Loads config
             var clientSettings : ClientSettings
