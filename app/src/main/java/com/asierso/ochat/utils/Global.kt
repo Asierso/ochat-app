@@ -1,4 +1,4 @@
-package com.asierso.ochat
+package com.asierso.ochat.utils
 
 import android.content.Context
 import com.asierso.ochat.models.ClientSettings

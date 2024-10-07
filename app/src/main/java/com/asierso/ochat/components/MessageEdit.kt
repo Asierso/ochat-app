@@ -4,11 +4,10 @@ import android.content.Context
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.LinearLayout.LayoutParams
-import android.widget.TableRow
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.view.setMargins
+import androidx.core.view.setPadding
 import androidx.core.widget.doOnTextChanged
-import com.asierso.ochat.Global
+import com.asierso.ochat.utils.Global
 import com.asierso.ochat.R
 import com.google.android.material.card.MaterialCardView
 
@@ -23,7 +22,7 @@ class MessageEdit (val context: Context) {
             strokeWidth = 0
             layoutParams = getCardResizedLayout()
             setContentPadding(
-                Global.getPixels(context, 15), //Left
+                Global.getPixels(context, 20), //Left
                 Global.getPixels(context, 5), //Top
                 Global.getPixels(context, 15), //Right
                 Global.getPixels(context, 5) //Bottom

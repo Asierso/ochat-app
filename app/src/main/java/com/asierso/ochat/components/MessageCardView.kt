@@ -9,10 +9,8 @@ import android.widget.TextView
 import androidx.appcompat.app.ActionBar.LayoutParams
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.cardview.widget.CardView
-import androidx.core.view.marginBottom
-import androidx.core.view.setMargins
 import androidx.core.widget.doOnTextChanged
-import com.asierso.ochat.Global
+import com.asierso.ochat.utils.Global
 import com.asierso.ochat.MainActivity.Side
 import com.asierso.ochat.R
 import com.google.android.material.card.MaterialCardView

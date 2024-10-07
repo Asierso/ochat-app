@@ -30,6 +30,7 @@ import com.asierso.ochat.components.MessageEdit
 import com.asierso.ochat.databinding.ActivityMainBinding
 import com.asierso.ochat.models.ClientSettings
 import com.asierso.ochat.models.Conversation
+import com.asierso.ochat.utils.Global
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

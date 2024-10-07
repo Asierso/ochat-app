@@ -1,7 +1,6 @@
 package com.asierso.ochat
 
 import android.content.Context
-import android.content.DialogInterface
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
@@ -14,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import com.asierso.ochat.api.LlamaConnection
 import com.asierso.ochat.databinding.ActivitySettingsBinding
 import com.asierso.ochat.models.ClientSettings
+import com.asierso.ochat.utils.Global
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
