@@ -4,7 +4,7 @@ import android.util.Log
 import com.asierso.ochat.api.models.LlamaMessage
 import com.asierso.ochat.models.Conversation
 
-class ChatOptimizer (var conversation: Conversation) {
+class ChatOptimizer (private var conversation: Conversation) {
     //Constants for chat optimization (min chats and max characters threshold)
     private val startOptimizerChat = 3
     private val maxChars = 1000
@@ -15,10 +15,10 @@ class ChatOptimizer (var conversation: Conversation) {
 
     init{
         //No optimize chat if less big than optimizer start threshold
-        if(conversation.chat.size <= startOptimizerChat)
-            optimizedchat = conversation.chat
+        optimizedchat = if(conversation.chat.size <= startOptimizerChat)
+            conversation.chat
         else {
-            optimizedchat = optimizeChat(startOptimizerChat) //Start optimize chat of base threshold
+            optimizeChat(startOptimizerChat) //Start optimize chat of base threshold
         }
     }
 

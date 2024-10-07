@@ -37,9 +37,7 @@ import kotlinx.coroutines.withContext
 class MainActivity : AppCompatActivity() {
     enum class Side { User, IA }
 
-    //private lateinit var conversation: ArrayList<LlamaMessage>
     private lateinit var conversation: Conversation
-
     private var settings: ClientSettings? = null
     private lateinit var context: Context
     private lateinit var binding: ActivityMainBinding
@@ -105,11 +103,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        //Open settings menu
         binding.btnSettings.setOnClickListener {
             val settings = Intent(context, SettingsActivity::class.java)
             startActivity(settings)
         }
 
+        //Load settings and last conversation opened if can
         settings = FilesManager.loadSettings(this)
         loadConversation()
 
@@ -139,7 +139,9 @@ class MainActivity : AppCompatActivity() {
                         //Generate summary for the first message
                         generateSummary(conversation.chat[0].content.toString())
 
+                        //Count for message (regeneration button purposes)
                         var i = 0
+
                         for (balloonMessage in conversation.chat)
                             withContext(Dispatchers.Main) {
                                 //Create all message balloons
@@ -147,6 +149,8 @@ class MainActivity : AppCompatActivity() {
                                     context,
                                     if (balloonMessage.role.equals("user")) Side.User else Side.IA
                                 )
+
+                                //Config message and add it to layout
                                 messageView.getTextComponent().text = balloonMessage.content.toString()
                                 findViewById<LinearLayout>(R.id.message_layout).addView(messageView.getView())
                                 messageView.stopLoading()
@@ -154,6 +158,7 @@ class MainActivity : AppCompatActivity() {
                                 //Load regeneration
                                 if(i==conversation.chat.size -1) {
                                     messageView.setRegenerate(true)
+                                    //Assign regeneration click to event
                                     messageView.getRegenerateButton().setOnClickListener {
                                         onRegenerate(messageView)
                                     }
@@ -200,11 +205,13 @@ class MainActivity : AppCompatActivity() {
                 "${settings!!.ip}_${settings!!.model}"
             )
         ) {
+            //Creates new chat
             binding.messageLayout.removeAllViews()
             conversation = Conversation()
 
+            //Hide description textview (no chat loaded or new one)
             if (binding.layoutTopBarComponents.size >= 2)
-                binding.layoutTopBarComponents.get(1).visibility = GONE
+                binding.layoutTopBarComponents[1].visibility = GONE
 
             //Try to charge if there is another saved conversation
             if (settings?.model != null && settings?.ip != null)
@@ -224,6 +231,7 @@ class MainActivity : AppCompatActivity() {
         val sendBtn = binding.btnSend
         sendBtn.isEnabled = status
         if (!status) {
+            //Send button is loading (loading IA response)
             sendBtn.setImageDrawable(
                 AppCompatResources.getDrawable(
                     this,
@@ -232,6 +240,7 @@ class MainActivity : AppCompatActivity() {
             )
             sendBtn.animation = AnimationUtils.loadAnimation(context, R.anim.load_rotation_bouncing)
         } else {
+            //Send button is prepared to click and send new prompt
             sendBtn.setImageDrawable(
                 AppCompatResources.getDrawable(
                     this,
@@ -249,7 +258,7 @@ class MainActivity : AppCompatActivity() {
         if (!settings!!.isUseDescriptions)
             return
 
-        var summary: TextView
+        val summary: TextView
 
         //Summary text view is added (recycle it)
         if (binding.layoutTopBarComponents.size == 2) {
@@ -287,7 +296,7 @@ class MainActivity : AppCompatActivity() {
                     .build()
 
                 //Build summary ask
-                var promptBuilder = LlamaPromptsBuilder(llamaRequestBase)
+                val promptBuilder = LlamaPromptsBuilder(llamaRequestBase)
                     .appendPrompt("summary in three words in the same language '${data}'")
 
                 try {
