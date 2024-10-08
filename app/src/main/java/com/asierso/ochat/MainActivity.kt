@@ -143,7 +143,11 @@ class MainActivity : AppCompatActivity() {
                         //Count for message (regeneration button purposes)
                         var i = 0
 
-                        for (balloonMessage in conversation.chat)
+                        for (balloonMessage in conversation.chat) {
+                            //Avoid create balloon if user message is empty
+                            if(balloonMessage.role.equals("user") && balloonMessage.content.isBlank())
+                                continue
+
                             withContext(Dispatchers.Main) {
                                 //Create all message balloons
                                 val messageView = MessageCardView(
@@ -152,12 +156,13 @@ class MainActivity : AppCompatActivity() {
                                 )
 
                                 //Config message and add it to layout
-                                messageView.getTextComponent().text = balloonMessage.content.toString()
+                                messageView.getTextComponent().text =
+                                    balloonMessage.content.toString()
                                 findViewById<LinearLayout>(R.id.message_layout).addView(messageView.getView())
                                 messageView.stopLoading()
 
                                 //Load regeneration
-                                if(i==conversation.chat.size -1) {
+                                if (i == conversation.chat.size - 1) {
                                     messageView.setRegenerate(true)
                                     //Assign regeneration click to event
                                     messageView.getRegenerateButton().setOnClickListener {
@@ -167,6 +172,7 @@ class MainActivity : AppCompatActivity() {
                                 }
                                 i++
                             }
+                        }
                         //Make autoscroll in another coroutine when load ends
                         withContext(Dispatchers.Main) {
                             scrollFinal()
