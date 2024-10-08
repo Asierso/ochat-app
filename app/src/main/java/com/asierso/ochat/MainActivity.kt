@@ -31,6 +31,7 @@ import com.asierso.ochat.databinding.ActivityMainBinding
 import com.asierso.ochat.models.ClientSettings
 import com.asierso.ochat.models.Conversation
 import com.asierso.ochat.utils.Global
+import com.asierso.ochat.utils.NotificationManagerSystem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -113,6 +114,8 @@ class MainActivity : AppCompatActivity() {
         //Load settings and last conversation opened if can
         settings = FilesManager.loadSettings(this)
         loadConversation()
+
+        NotificationManagerSystem.getInstance(this)?.sendNotification(this)
 
     }
 
