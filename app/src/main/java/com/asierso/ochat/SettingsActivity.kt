@@ -15,6 +15,7 @@ import com.asierso.ochat.databinding.ActivitySettingsBinding
 import com.asierso.ochat.models.ClientSettings
 import com.asierso.ochat.utils.Global
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -46,7 +47,16 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         binding.btnDeleteAll.setOnClickListener {
-            FilesManager.removeAllChats(context)
+            MaterialAlertDialogBuilder(context)
+                .setTitle("Warning")
+                .setMessage("Do you want to continue? All chats will be delete")
+                .setNegativeButton("No") { dialogInterface, i ->
+
+                }
+                .setPositiveButton("Yes") { dialogInterface, i ->
+                    FilesManager.removeAllChats(context)
+                }.show()
+
         }
 
         binding.lblLlamaport.setOnKeyListener { view, i, keyEvent ->
@@ -124,6 +134,7 @@ class SettingsActivity : AppCompatActivity() {
                 } catch (ignore: Exception) {
                     withContext(Dispatchers.Main) {
                         binding.spinnerLlamamodel.adapter = null
+                        Snackbar.make(binding.root,"Error at connecting with provided Ollama server",Snackbar.LENGTH_SHORT).show()
                     }
                 }
             }
