@@ -16,6 +16,7 @@ import com.asierso.ochat.R
 class NotificationManagerSystem private constructor(context: Context) {
     companion object {
         private var instance: NotificationManagerSystem? = null
+        private var mid = 0
         fun getInstance(context: Context): NotificationManagerSystem? {
             if (instance == null)
                 instance = NotificationManagerSystem(context)
@@ -40,7 +41,7 @@ class NotificationManagerSystem private constructor(context: Context) {
 
     }
 
-    fun sendNotification(context: Context) {
+    fun sendNotification(context: Context,title: String, content : String) {
         //Create intent to open app
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -50,9 +51,9 @@ class NotificationManagerSystem private constructor(context: Context) {
 
         //Create notification
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ochat)
-            .setContentTitle("Título de la notificación")
-            .setContentText("Este es el texto de la notificación")
+            .setSmallIcon(R.drawable.ochat_notification)
+            .setContentTitle(title)
+            .setContentText(content)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
@@ -63,16 +64,9 @@ class NotificationManagerSystem private constructor(context: Context) {
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
                 return
             }
-            notify(1234, builder.build())
+            notify(mid++,builder.build())
         }
     }
 }

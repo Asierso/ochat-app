@@ -17,7 +17,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.get
 import androidx.core.view.size
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.asierso.ochat.api.*
 import com.asierso.ochat.api.builder.LlamaDialogsBuilder
 import com.asierso.ochat.api.builder.LlamaPromptsBuilder
@@ -31,7 +35,8 @@ import com.asierso.ochat.databinding.ActivityMainBinding
 import com.asierso.ochat.models.ClientSettings
 import com.asierso.ochat.models.Conversation
 import com.asierso.ochat.utils.Global
-import com.asierso.ochat.utils.NotificationManagerSystem
+import com.asierso.ochat.utils.ForegroundListener
+import com.asierso.ochat.workers.LlamaGeneratorWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -53,6 +58,9 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        //Add lifecycle observer for foreground listener
+        ProcessLifecycleOwner.get().lifecycle.addObserver(ForegroundListener())
 
         context = this
 
@@ -115,8 +123,19 @@ class MainActivity : AppCompatActivity() {
         settings = FilesManager.loadSettings(this)
         loadConversation()
 
-        NotificationManagerSystem.getInstance(this)?.sendNotification(this)
+        //val periodicWorkRequest = PeriodicWorkRequestBuilder<NotificationWorker>(15, TimeUnit.MINUTES)
+          //  .build()
 
+        //WorkManager.getInstance(applicationContext).enqueue(periodicWorkRequest)
+
+        /*
+        val oneTimeWorkRequest = OneTimeWorkRequestBuilder<LlamaGeneratorWorker>().build()
+        WorkManager.getInstance(applicationContext).enqueue(oneTimeWorkRequest)*/
+
+        WorkManager.getInstance(applicationContext).enqueueUniqueWork("unique_notification_work",
+            ExistingWorkPolicy.KEEP,OneTimeWorkRequestBuilder<LlamaGeneratorWorker>()
+            .addTag("unique_notification_work")
+            .build())
     }
 
     private fun scrollFinal() {
