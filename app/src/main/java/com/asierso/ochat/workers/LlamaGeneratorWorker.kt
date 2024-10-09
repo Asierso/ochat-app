@@ -25,10 +25,14 @@ class LlamaGeneratorWorker(context: Context, workerParams: WorkerParameters) :
     Worker(context, workerParams) {
     override fun doWork(): Result {
         //Detects if app isn't in foreground
-        while (ForegroundListener.isForeground) { }
+        while (ForegroundListener.isForeground) {
+        }
 
+        TimeUnit.MINUTES.sleep(Random.nextInt(3, 15).toLong())
 
-        TimeUnit.MINUTES.sleep(Random.nextInt(3,15).toLong())
+        //If app activity is resumed, avoid to generate notification with user inside
+        if (ForegroundListener.isForeground)
+            return Result.failure()
 
         val settings = FilesManager.loadSettings(applicationContext)
 
@@ -64,7 +68,7 @@ class LlamaGeneratorWorker(context: Context, workerParams: WorkerParameters) :
                     )
 
                     //Check if there was problems generating response and cancel worker
-                    if(llamaResponse.message.content.toString().trim().isBlank())
+                    if (llamaResponse.message.content.toString().trim().isBlank())
                         return Result.failure()
 
                     //Add new response and save it
@@ -76,7 +80,9 @@ class LlamaGeneratorWorker(context: Context, workerParams: WorkerParameters) :
                     )
 
                     //Show response as notification
-                    var iaName = if(settings.model.toString().contains(":")) settings.model.toString().split(":")[0] else settings.model.toString()
+                    var iaName =
+                        if (settings.model.toString().contains(":")) settings.model.toString()
+                            .split(":")[0] else settings.model.toString()
                     NotificationManagerSystem.getInstance(applicationContext)!!
                         .sendNotification(
                             applicationContext,
