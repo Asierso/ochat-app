@@ -162,6 +162,9 @@ class SettingsActivity : AppCompatActivity() {
         //Optimize models
         binding.switchOptimizeModels.isChecked = settings!!.isOptimizeModels
 
+        //Enable notify agent
+        binding.switchNotifyAgent.isChecked = settings!!.isNotifyAgent
+
     }
 
     private fun saveConfig() {
@@ -180,6 +183,7 @@ class SettingsActivity : AppCompatActivity() {
             isSsl = binding.radioHttps.isChecked
             isUseDescriptions = binding.switchUseDescriptions.isChecked
             isOptimizeModels = binding.switchOptimizeModels.isChecked
+            isNotifyAgent = binding.switchNotifyAgent.isChecked
         }
 
         FilesManager.saveSettings(context, settings)

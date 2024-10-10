@@ -34,9 +34,10 @@ import com.asierso.ochat.components.MessageEdit
 import com.asierso.ochat.databinding.ActivityMainBinding
 import com.asierso.ochat.models.ClientSettings
 import com.asierso.ochat.models.Conversation
+import com.asierso.ochat.utils.ChatOptimizer
 import com.asierso.ochat.utils.Global
 import com.asierso.ochat.utils.ForegroundListener
-import com.asierso.ochat.workers.LlamaGeneratorWorker
+import com.asierso.ochat.workers.NotifyAgentWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -123,19 +124,15 @@ class MainActivity : AppCompatActivity() {
         settings = FilesManager.loadSettings(this)
         loadConversation()
 
-        //val periodicWorkRequest = PeriodicWorkRequestBuilder<NotificationWorker>(15, TimeUnit.MINUTES)
-          //  .build()
-
-        //WorkManager.getInstance(applicationContext).enqueue(periodicWorkRequest)
-
-        /*
-        val oneTimeWorkRequest = OneTimeWorkRequestBuilder<LlamaGeneratorWorker>().build()
-        WorkManager.getInstance(applicationContext).enqueue(oneTimeWorkRequest)*/
-
-        WorkManager.getInstance(applicationContext).enqueueUniqueWork("unique_notification_work",
-            ExistingWorkPolicy.KEEP,OneTimeWorkRequestBuilder<LlamaGeneratorWorker>()
-            .addTag("unique_notification_work")
-            .build())
+        //Add background service if option is enabled
+        if(settings != null && settings!!.isNotifyAgent) {
+            WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+                "unique_ochat_notify_agent",
+                ExistingWorkPolicy.KEEP, OneTimeWorkRequestBuilder<NotifyAgentWorker>()
+                    .addTag("unique_ochat_notify_agent")
+                    .build()
+            )
+        }
     }
 
     private fun scrollFinal() {

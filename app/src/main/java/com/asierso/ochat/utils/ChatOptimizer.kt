@@ -1,4 +1,4 @@
-package com.asierso.ochat
+package com.asierso.ochat.utils
 
 import android.util.Log
 import com.asierso.ochat.api.models.LlamaMessage

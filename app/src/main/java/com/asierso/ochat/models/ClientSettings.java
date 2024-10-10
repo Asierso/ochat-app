@@ -9,6 +9,7 @@ public class ClientSettings {
     private boolean ssl;
     private boolean useDescriptions = true;
     private boolean optimizeModels = false;
+    private boolean notifyAgent = false;
 
     public boolean isUseDescriptions() {
         return useDescriptions;
@@ -56,6 +57,14 @@ public class ClientSettings {
 
     public void setOptimizeModels(boolean optimizeModels) {
         this.optimizeModels = optimizeModels;
+    }
+
+    public boolean isNotifyAgent() {
+        return notifyAgent;
+    }
+
+    public void setNotifyAgent(boolean notifyAgent) {
+        this.notifyAgent = notifyAgent;
     }
 
     @Override

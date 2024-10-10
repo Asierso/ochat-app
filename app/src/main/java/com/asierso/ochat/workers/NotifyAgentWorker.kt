@@ -1,10 +1,9 @@
 package com.asierso.ochat.workers
 
 import android.content.Context
-import android.util.Log
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.asierso.ochat.ChatOptimizer
+import com.asierso.ochat.utils.ChatOptimizer
 import com.asierso.ochat.FilesManager
 import com.asierso.ochat.api.LlamaConnection
 import com.asierso.ochat.api.builder.LlamaDialogsBuilder
@@ -14,21 +13,19 @@ import com.asierso.ochat.api.models.LlamaMessage
 import com.asierso.ochat.utils.Global
 import com.asierso.ochat.utils.ForegroundListener
 import com.asierso.ochat.utils.NotificationManagerSystem
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
-class LlamaGeneratorWorker(context: Context, workerParams: WorkerParameters) :
+class NotifyAgentWorker(context: Context, workerParams: WorkerParameters) :
     Worker(context, workerParams) {
     override fun doWork(): Result {
         //Detects if app isn't in foreground
         while (ForegroundListener.isForeground) {
+            //Wait until app is closed or secondary
         }
 
-        TimeUnit.MINUTES.sleep(Random.nextInt(3, 15).toLong())
+        TimeUnit.MINUTES.sleep(Random.nextInt(5, 20).toLong())
 
         //If app activity is resumed, avoid to generate notification with user inside
         if (ForegroundListener.isForeground)
@@ -36,8 +33,7 @@ class LlamaGeneratorWorker(context: Context, workerParams: WorkerParameters) :
 
         val settings = FilesManager.loadSettings(applicationContext)
 
-        if (settings != null && settings.model != null && settings.model.isNotBlank()) {
-
+        if (settings != null && settings.isNotifyAgent && settings.model != null && settings.model.isNotBlank()) {
             //Load previous conversation
             val conversation = FilesManager.loadConversation(
                 applicationContext,
