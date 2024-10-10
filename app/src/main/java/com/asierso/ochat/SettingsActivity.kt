@@ -50,16 +50,16 @@ class SettingsActivity : AppCompatActivity() {
             MaterialAlertDialogBuilder(context)
                 .setTitle("Warning")
                 .setMessage("Do you want to continue? All chats will be delete")
-                .setNegativeButton("No") { dialogInterface, i ->
+                .setNegativeButton("No") { _,_ ->
 
                 }
-                .setPositiveButton("Yes") { dialogInterface, i ->
+                .setPositiveButton("Yes") { _,_ ->
                     FilesManager.removeAllChats(context)
                 }.show()
 
         }
 
-        binding.lblLlamaport.setOnKeyListener { view, i, keyEvent ->
+        binding.lblLlamaport.setOnKeyListener { _,_,_ ->
             if(binding.lblLlamaport.text.toString().isNotBlank() && binding.lblLlamaport.text.toString().toInt() in 0..65535){
                 binding.lblLlamaport.error = null
             }else{
@@ -75,15 +75,15 @@ class SettingsActivity : AppCompatActivity() {
             tryGetModels()
         }
 
-        binding.switchOptimizeModels.setOnCheckedChangeListener { compoundButton, b ->
-            if(b==true)
+        binding.switchOptimizeModels.setOnCheckedChangeListener { _, value ->
+            if(value)
             MaterialAlertDialogBuilder(context)
                 .setTitle("Warning")
-                .setMessage("Optimization improve models reducing the chat context. This could generate lack of previous context but more accurated answers. Do you want to continue?")
-                .setNegativeButton("No") { dialogInterface, i ->
+                .setMessage("Optimization improve models reducing the chat context. This could generate lack of previous context but more accurate answers. Do you want to continue?")
+                .setNegativeButton("No") { _,_ ->
                     binding.switchOptimizeModels.isChecked = false
                 }
-                .setPositiveButton("Yes") { dialogInterface, i ->
+                .setPositiveButton("Yes") { _,_ ->
                     binding.switchOptimizeModels.isChecked = true
                 }.show()
         }
