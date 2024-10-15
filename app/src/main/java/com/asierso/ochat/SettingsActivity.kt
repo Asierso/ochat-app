@@ -4,6 +4,8 @@ import android.content.Context
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.animation.AnimationUtils
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -59,14 +61,25 @@ class SettingsActivity : AppCompatActivity() {
 
         }
 
-        binding.lblLlamaport.setOnKeyListener { _,_,_ ->
-            if(binding.lblLlamaport.text.toString().isNotBlank() && binding.lblLlamaport.text.toString().toInt() in 0..65535){
-                binding.lblLlamaport.error = null
-            }else{
-                binding.lblLlamaport.error = "Port should be between 0 and 65535"
+
+        binding.tiLlamaport.addTextChangedListener(object:TextWatcher{
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
             }
-            return@setOnKeyListener false
-        }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+                if(binding.tiLlamaport.text.toString().isNotBlank() && binding.tiLlamaport.text.toString().toInt() in 0..65535){
+                    binding.tilLlamaport.error = null
+                }else{
+                    binding.tilLlamaport.error = "Port should be between 0 and 65535"
+                }
+            }
+
+        })
 
         loadConfig()
 
@@ -100,8 +113,8 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun tryGetModels() {
         //Get IP and port from view
-        val ip = binding.lblLlamaip.text.toString()
-        val port = binding.lblLlamaport.text.toString().trim()
+        val ip = binding.tiLlamaip.text.toString()
+        val port = binding.tiLlamaport.text.toString().trim()
 
         //Try to fetch models if data is valid
         if (ip.isNotBlank() && port.isNotBlank()) {
@@ -158,8 +171,8 @@ class SettingsActivity : AppCompatActivity() {
         fetchModels(settings!!)
 
         //Connection IP port
-        binding.lblLlamaip.setText(settings!!.ip)
-        binding.lblLlamaport.setText(settings!!.port.toString())
+        binding.tiLlamaip.setText(settings!!.ip)
+        binding.tiLlamaport.setText(settings!!.port.toString())
 
         //Protocol
         binding.radioHttps.isChecked = (settings!!.isSsl)
@@ -178,7 +191,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun saveConfig() {
         //Validate data
-        if (binding.lblLlamaport.text.toString().isNotBlank() && binding.lblLlamaport.text.toString().toInt() !in 0..65535) {
+        if (binding.tiLlamaport.text.toString().isNotBlank() && binding.tiLlamaport.text.toString().toInt() !in 0..65535) {
             Snackbar.make(binding.root, "Error, port should be between 0 and 65535", Snackbar.LENGTH_SHORT)
                 .show()
             return
@@ -186,8 +199,8 @@ class SettingsActivity : AppCompatActivity() {
 
         //Save settings
         val settings = ClientSettings().apply {
-            ip = binding.lblLlamaip.text.toString().trim()
-            port = if(binding.lblLlamaport.text.toString().trim().isBlank()) 0 else binding.lblLlamaport.text.toString().trim().toInt()
+            ip = binding.tiLlamaip.text.toString().trim()
+            port = if(binding.tiLlamaport.text.toString().trim().isBlank()) 0 else binding.tiLlamaport.text.toString().trim().toInt()
             model = binding.spinnerLlamamodel.selectedItem?.toString()
             isSsl = binding.radioHttps.isChecked
             isUseDescriptions = binding.switchUseDescriptions.isChecked

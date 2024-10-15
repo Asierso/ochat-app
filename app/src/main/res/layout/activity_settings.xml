@@ -66,13 +66,14 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
                 android:padding="10dp"
-                android:gravity="end|center">
+                android:gravity="end|center"
+                android:id="@+id/til_llamaip">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:hint="IP"
-                    android:id="@+id/lbl_llamaip"/>
+                    android:id="@+id/ti_llamaip"/>
             </com.google.android.material.textfield.TextInputLayout>
         </TableRow>
 
@@ -93,6 +94,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
                 android:padding="10dp"
+                android:id="@+id/til_llamaport"
                 android:gravity="end|center">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -100,7 +102,7 @@
                     android:layout_height="match_parent"
                     android:hint="Port"
                     android:inputType="number"
-                    android:id="@+id/lbl_llamaport"/>
+                    android:id="@+id/ti_llamaport"/>
             </com.google.android.material.textfield.TextInputLayout>
         </TableRow>
 
