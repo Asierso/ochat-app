@@ -170,7 +170,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun saveConfig() {
         //Validate data
         if (binding.lblLlamaport.text.toString().isNotBlank() && binding.lblLlamaport.text.toString().toInt() !in 0..65535) {
-            Toast.makeText(context, "Error, port should be between 0 and 65535", Toast.LENGTH_SHORT)
+            Snackbar.make(binding.root, "Error, port should be between 0 and 65535", Snackbar.LENGTH_SHORT)
                 .show()
             return
         }

@@ -38,6 +38,7 @@ import com.asierso.ochat.utils.ChatOptimizer
 import com.asierso.ochat.utils.Global
 import com.asierso.ochat.utils.ForegroundListener
 import com.asierso.ochat.workers.NotifyAgentWorker
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -109,7 +110,7 @@ class MainActivity : AppCompatActivity() {
                 messageEdit.clear()
                 scrollFinal()
             } catch (e: Exception) {
-                Toast.makeText(this, "Error at connecting ${e.message}", Toast.LENGTH_SHORT)
+                Snackbar.make(binding.root, "Error at connecting ${e.message}", Snackbar.LENGTH_SHORT)
                     .show()
             }
         }
@@ -371,7 +372,7 @@ class MainActivity : AppCompatActivity() {
 
         //Check if settings are correct
         if (settings == null) {
-            Toast.makeText(this, "Error, specify valid settings", Toast.LENGTH_SHORT).show()
+            Snackbar.make(binding.root, "You need to specify valid settings before", Snackbar.LENGTH_SHORT).show()
             return
         }
 

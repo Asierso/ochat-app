@@ -87,11 +87,6 @@ class NotifyAgentWorker(context: Context, workerParams: WorkerParameters) :
                         )
 
                 } catch (e: LlamaConnectionException) {
-                    NotificationManagerSystem.getInstance(applicationContext)!!
-                        .sendNotification(
-                            applicationContext,
-                            "eRROR", "E"
-                        )
                     return Result.failure()
                 }
             }
