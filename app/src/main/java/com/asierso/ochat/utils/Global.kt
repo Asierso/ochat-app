@@ -38,9 +38,11 @@ class Global {
                             context,
                             Manifest.permission.POST_NOTIFICATIONS
                         ) == PackageManager.PERMISSION_GRANTED)
+                }else{
+                    return false
                 }
-            }
-            return false
+            } else
+                return true
         }
     }
 }
