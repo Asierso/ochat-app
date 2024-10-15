@@ -28,7 +28,7 @@ class NotifyAgentWorker(context: Context, workerParams: WorkerParameters) :
         TimeUnit.MINUTES.sleep(Random.nextInt(5, 20).toLong())
 
         //If app activity is resumed, avoid to generate notification with user inside
-        if (ForegroundListener.isForeground)
+        if (ForegroundListener.isForeground && !ForegroundListener.canSendNotification)
             return Result.failure()
 
         val settings = FilesManager.loadSettings(applicationContext)
@@ -85,6 +85,9 @@ class NotifyAgentWorker(context: Context, workerParams: WorkerParameters) :
                             iaName.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() },
                             llamaResponse.message.content.toString()
                         )
+
+                    //Disable notifications
+                    ForegroundListener.canSendNotification = false
 
                 } catch (e: LlamaConnectionException) {
                     return Result.failure()
