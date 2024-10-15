@@ -1,6 +1,8 @@
 package com.asierso.ochat.workers
 
 import android.content.Context
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.asierso.ochat.utils.ChatOptimizer
@@ -23,6 +25,11 @@ class NotifyAgentWorker(context: Context, workerParams: WorkerParameters) :
         //Detects if app isn't in foreground
         while (ForegroundListener.isForeground) {
             //Wait until app is closed or secondary
+        }
+
+        //Detect if app have permission to send notifications (if not, abort worker)
+        if(ActivityCompat.checkSelfPermission(applicationContext, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
+            return Result.failure()
         }
 
         TimeUnit.MINUTES.sleep(Random.nextInt(5, 20).toLong())

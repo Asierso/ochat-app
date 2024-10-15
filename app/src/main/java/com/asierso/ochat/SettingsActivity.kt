@@ -87,6 +87,15 @@ class SettingsActivity : AppCompatActivity() {
                     binding.switchOptimizeModels.isChecked = true
                 }.show()
         }
+
+        binding.switchNotifyAgent.setOnCheckedChangeListener { _ , value ->
+            if(value) {
+                if(!Global.checkPermissions(context)){
+                    Snackbar.make(binding.root,"Error at request permission. You must grant notification permission to use this function",Snackbar.LENGTH_SHORT)
+                        .show()
+                }
+            }
+        }
     }
 
     private fun tryGetModels() {
