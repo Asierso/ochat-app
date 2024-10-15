@@ -21,7 +21,6 @@ class MessageCardView(private val context: Context, private val side: Side) {
     private var card: CardView? = null
     private var text: TextView? = null
     private var regenerate: ImageView? = null
-    private var isLoading = true
     private var dots = 0
 
     init {

@@ -2,7 +2,6 @@ package com.asierso.ochat
 
 import android.content.Context
 import android.util.Log
-import com.asierso.ochat.api.models.LlamaMessage
 import com.asierso.ochat.models.ClientSettings
 import com.asierso.ochat.models.Conversation
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -25,7 +24,7 @@ class FilesManager {
                 it.write(Gson().toJson(clientSettings))
             }
         }
-        fun loadSettings(context: Context) : ClientSettings?{
+        fun loadSettings(context: Context) : ClientSettings{
             //Detects if previous config file exists and if not, create new one with default settings
             if(!File("${context.filesDir}con_settings.json").exists()){
                 val defaultSettings = ClientSettings().apply {

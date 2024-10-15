@@ -66,7 +66,7 @@ class NotifyAgentWorker(context: Context, workerParams: WorkerParameters) :
 
                 try {
                     //Try to fetch IA to receive new response
-                    var llamaResponse = llama.fetch(
+                    val llamaResponse = llama.fetch(
                         dialogBuilder.build()
                     )
 
@@ -83,7 +83,7 @@ class NotifyAgentWorker(context: Context, workerParams: WorkerParameters) :
                     )
 
                     //Show response as notification
-                    var iaName =
+                    val iaName =
                         if (settings.model.toString().contains(":")) settings.model.toString()
                             .split(":")[0] else settings.model.toString()
                     NotificationManagerSystem.getInstance(applicationContext)!!

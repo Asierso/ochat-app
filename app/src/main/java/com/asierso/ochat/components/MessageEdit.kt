@@ -2,10 +2,8 @@ package com.asierso.ochat.components
 
 import android.content.Context
 import android.widget.EditText
-import android.widget.LinearLayout
 import android.widget.LinearLayout.LayoutParams
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.view.setPadding
 import androidx.core.widget.doOnTextChanged
 import com.asierso.ochat.utils.Global
 import com.asierso.ochat.R
@@ -31,7 +29,7 @@ class MessageEdit (val context: Context) {
 
         }
         editText = EditText(context).apply {
-            layoutParams = LinearLayout.LayoutParams(
+            layoutParams = LayoutParams(
                 LayoutParams.MATCH_PARENT,
                 LayoutParams.WRAP_CONTENT
             )
@@ -40,20 +38,20 @@ class MessageEdit (val context: Context) {
             background = AppCompatResources.getDrawable(context,android.R.color.transparent)
         }
 
-        editText.doOnTextChanged { text, start, before, count -> updateSizeAtChange(text,start,before,count) }
+        editText.doOnTextChanged { _,_,_,_ -> updateSizeAtChange() }
         card.addView(editText)
 
     }
 
-    private fun updateSizeAtChange(text: CharSequence?, start: Int, before: Int, count: Int){
+    private fun updateSizeAtChange(){
         var lines = editText.lineCount
         lines = if (lines > 10) 10 else lines
 
         card.layoutParams = getCardResizedLayout(lines)
     }
 
-    private fun getCardResizedLayout(lines : Int = 1) : LinearLayout.LayoutParams{
-        return LinearLayout.LayoutParams(
+    private fun getCardResizedLayout(lines : Int = 1) : LayoutParams{
+        return LayoutParams(
             context.resources.displayMetrics.widthPixels - 230,
             Global.getPixels(context, 50) + ((lines - 1) * Global.getPixels(context, 19))
         )
