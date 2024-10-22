@@ -33,7 +33,7 @@ class MessageEdit (val context: Context) {
                 LayoutParams.MATCH_PARENT,
                 LayoutParams.WRAP_CONTENT
             )
-            hint="Message here!"
+            hint=resources.getString(R.string.main_message_hint)
             textSize= Global.getPixels(context, 5).toFloat()
             background = AppCompatResources.getDrawable(context,android.R.color.transparent)
         }

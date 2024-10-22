@@ -13,4 +13,6 @@
     <string name="settings_send_notifications_text">Send notifications</string>
     <string name="settings_save_changes_button">Save changes</string>
     <string name="settings_clear_chats_button">Clear chats</string>
+    <string name="settings_general_apart">General</string>
+    <string name="main_message_hint">Message here!</string>
 </resources>
