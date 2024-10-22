@@ -37,7 +37,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Chat"
+            android:text="@string/chat_title"
             android:lineSpacingExtra="0dp"
             android:textSize="13pt" />
         </LinearLayout>
@@ -94,7 +94,7 @@
                     android:layout_marginStart="0dp"
                     android:padding="10dp"
                     android:src="@drawable/baseline_send_24"
-                    android:contentDescription="send button"
+                    android:contentDescription="Send button"
                     app:tint="@color/white"/>
         </LinearLayout>
     </LinearLayout>

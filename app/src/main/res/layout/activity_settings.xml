@@ -58,7 +58,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="10pt"
                 android:layout_gravity="start|center"
-                android:text="Server IP"
+                android:text="@string/settings_server_ip_text"
                 android:padding="10dp"/>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -72,7 +72,7 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:hint="IP"
+                    android:hint="@string/settings_ip_hint"
                     android:id="@+id/ti_llamaip"/>
             </com.google.android.material.textfield.TextInputLayout>
         </TableRow>
@@ -86,7 +86,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="10pt"
                 android:layout_gravity="start|center"
-                android:text="Llama port"
+                android:text="@string/settings_llama_port_text"
                 android:padding="10dp"/>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -100,7 +100,7 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:hint="Port"
+                    android:hint="@string/settings_port_hint"
                     android:inputType="number"
                     android:id="@+id/ti_llamaport"/>
             </com.google.android.material.textfield.TextInputLayout>
@@ -115,7 +115,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="10pt"
                 android:layout_gravity="start|center"
-                android:text="Model name"
+                android:text="@string/settings_model_name"
                 android:padding="10dp"/>
 
             <Spinner android:layout_width="0dp"
@@ -123,13 +123,14 @@
                 android:layout_weight="2"
                 android:id="@+id/spinner_llamamodel"/>
 
-            <ImageView
+            <ImageButton
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@drawable/baseline_refresh_24"
                 android:layout_gravity="center_vertical"
                 app:tint="@color/white"
                 android:id="@+id/btn_models_refresh"
+                android:background="@android:color/transparent"
                 android:layout_marginEnd="10dp"/>
         </TableRow>
 
@@ -143,7 +144,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="10pt"
                 android:layout_gravity="start|center"
-                android:text="Protocol"
+                android:text="@string/settings_protocol_text"
                 android:padding="10dp"
                 android:paddingStart="0dp"/>
             <RadioGroup android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/rgroup_protocol">
@@ -168,7 +169,7 @@
         <TextView
             android:layout_width="match_parent"
             android:gravity="center"
-            android:text="Extra Functions"
+            android:text="@string/settings_extra_functions_apart"
             android:textColor="@color/txt_secondary"/>
 
         <!--Use descriptions -->
@@ -182,7 +183,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="10pt"
                 android:layout_gravity="start|center"
-                android:text="Use descriptions"
+                android:text="@string/string_use_descriptions_text"
                 android:padding="10dp"/>
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -204,7 +205,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="10pt"
                 android:layout_gravity="start|center"
-                android:text="Optimize models"
+                android:text="@string/settings_optimize_models_text"
                 android:padding="10dp"/>
 
             <com.google.android.material.materialswitch.MaterialSwitch
@@ -226,7 +227,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="10pt"
                 android:layout_gravity="start|center"
-                android:text="Send notifications"
+                android:text="@string/settings_send_notifications_text"
                 android:padding="10dp"/>
 
             <com.google.android.material.materialswitch.MaterialSwitch
@@ -239,24 +240,28 @@
 
         <!-- Save clear-->
         <TableRow
+            style="?android:attr/buttonBarStyle"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:padding="10dp">
+
             <Button
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:id="@+id/btn_save"
-                android:text="Save changes"
-                android:layout_marginEnd="5dp"/>
+                android:text="@string/settings_save_changes_button"
+                android:layout_marginEnd="5dp" />
+
             <Button
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:id="@+id/btn_delete_all"
                 android:textColor="@android:color/holo_red_light"
-                android:backgroundTint="#454749"
-                android:text="Clear chats"
+                android:text="@string/settings_clear_chats_button"
                 android:layout_marginStart="5dp"/>
         </TableRow>
 
