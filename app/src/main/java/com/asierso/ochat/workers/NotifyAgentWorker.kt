@@ -40,7 +40,7 @@ class NotifyAgentWorker(context: Context, workerParams: WorkerParameters) :
 
         val settings = FilesManager.loadSettings(applicationContext)
 
-        if (settings != null && settings.isNotifyAgent && settings.model != null && settings.model.isNotBlank()) {
+        if (settings.isNotifyAgent && settings.model != null && settings.model.isNotBlank()) {
             //Load previous conversation
             val conversation = FilesManager.loadConversation(
                 applicationContext,

@@ -222,10 +222,6 @@ class MainActivity : AppCompatActivity() {
         val prevTmp = settings
         settings = FilesManager.loadSettings(this)
 
-        //Avoid null pointer exception
-        if (settings == null)
-            return
-
         //Detects critical changes in settings and clear chats if is it or clear chat if is removed
         if (settings.hashCode() != prevTmp.hashCode() || !FilesManager.chatExists(
                 this,
