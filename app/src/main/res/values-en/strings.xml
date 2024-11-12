@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ochat</string>
+    <string name="chat_title">Chat</string>
+    <string name="settings_llama_port_text">Llama port</string>
+    <string name="settings_server_ip_text">Server IP</string>
+    <string name="settings_port_hint">Port</string>
+    <string name="settings_ip_hint">IP</string>
+    <string name="settings_model_name">Model name</string>
+    <string name="settings_protocol_text">Protocol</string>
+    <string name="settings_extra_functions_apart">Extra Functions</string>
+    <string name="string_use_descriptions_text">Use descriptions</string>
+    <string name="settings_optimize_models_text">Optimize models</string>
+    <string name="settings_send_notifications_text">Send notifications</string>
+    <string name="settings_save_changes_button">Save changes</string>
+    <string name="settings_clear_chats_button">Clear chats</string>
+    <string name="settings_general_apart">General</string>
+    <string name="main_message_hint">Message here!</string>
+</resources>
